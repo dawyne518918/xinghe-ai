@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>星河AI + 智能配音</title>
+<style>
+:root{--bg:#F8FAFC;--surface:#fff;--border:#e2e8f0;--text:#1e293b;--text2:#64748b;--text3:#94a3b8;--accent:#F28482;--accent2:#FFB347;--green:#059669;--green-bg:#ECFDF5}
+[data-theme=dark]{--bg:#0f172a;--surface:#1e293b;--border:#334155;--text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;--green-bg:#064e3b}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);font-family:'PingFang SC','Microsoft YaHei',sans-serif;color:var(--text);line-height:1.6}
+.nav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-logo{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.nav-logo span{background:linear-gradient(90deg,#FFB347,#E5A1F5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:4px;list-style:none;align-items:center}
+.nav-links a,.nav-links button{text-decoration:none;color:var(--text2);font-size:.8rem;font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:5px 10px;border-radius:7px;transition:.15s}
+.nav-links a:hover,.nav-links button:hover{color:var(--text);background:var(--bg)}
+.nav-links a.active{color:var(--accent);font-weight:600}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-points{display:none;align-items:center;font-size:.75rem;font-weight:600;color:var(--accent2);background:#FFF8F0;padding:4px 10px;border-radius:12px;border:1px solid #FED7AA;white-space:nowrap;cursor:default}
+.nav-diamonds{display:none;align-items:center;gap:5px;font-size:.78rem;font-weight:700;color:#5b21b6;background:linear-gradient(135deg,#f5f3ff,#ede9fe);padding:5px 13px;border-radius:20px;border:1.5px solid #c4b5fd;white-space:nowrap;cursor:default}
+.nav-diamonds .dia-icon{font-size:.9rem;filter:drop-shadow(0 1px 2px rgba(99,102,241,.4))}
+[data-theme=dark] .nav-diamonds{color:#c4b5fd;background:linear-gradient(135deg,#1e1b4b,#312e81);border-color:#6366f1}
+.dub-cost-card{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;border-radius:14px;padding:16px 20px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;transition:.3s}
+[data-theme=dark] .dub-cost-card{background:linear-gradient(135deg,#1e1b4b,#312e81);border-color:#6366f1}
+.dub-cost-card .cost-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dub-cost-card .cost-item{text-align:center}
+.dub-cost-card .cost-val{font-size:1.2rem;font-weight:800;color:#5b21b6}
+[data-theme=dark] .dub-cost-card .cost-val{color:#c4b5fd}
+.dub-cost-card .cost-label{font-size:.65rem;color:#7c3aed;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+[data-theme=dark] .dub-cost-card .cost-label{color:#a78bfa}
+.dub-cost-card .cost-divider{width:1px;height:28px;background:#c4b5fd}
+.dub-cost-card .cost-total{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:10px 18px;box-shadow:0 2px 8px rgba(99,102,241,.12)}
+[data-theme=dark] .dub-cost-card .cost-total{background:#1e1b4b;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.dub-cost-card .cost-total .big-diamond{font-size:1.5rem}
+.dub-cost-card .cost-total .big-price{font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.dub-cost-card .cost-balance{font-size:.73rem;color:#7c3aed;font-weight:500}
+[data-theme=dark] .dub-cost-card .cost-balance{color:#a78bfa}
+.dub-cost-card .cost-insufficient{color:#ef4444!important}
+@media(max-width:700px){.dub-cost-card{flex-direction:column;align-items:flex-start}}
+.btn-theme{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.page{display:none}.page.active{display:block}
+.container{max-width:900px;margin:0 auto;padding:0 20px}
+.section-title{text-align:center;margin-bottom:24px}
+.section-title h2{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.section-title p{color:var(--text2);font-size:.85rem}
+.form-panel{background:var(--surface);border-radius:18px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.form-group{display:flex;flex-direction:column;gap:4px}.form-group.full{grid-column:1/-1}
+.form-group label{font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-group select,.form-group textarea,.form-group input{padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;color:var(--text);background:var(--bg);outline:none;resize:vertical}
+.form-group select:focus,.form-group textarea:focus,.form-group input:focus{border-color:#FFB347;box-shadow:0 0 0 3px rgba(255,179,71,.15)}
+.form-group textarea{min-height:60px;font-size:.78rem}
+.persona-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.persona-card{padding:10px 6px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:.2s;font-size:.75rem;font-weight:500}
+.persona-card:hover{border-color:var(--accent)}.persona-card.active{border-color:var(--accent);background:linear-gradient(135deg,#FFF1F0,#FFF8F0);font-weight:600}
+.btn-row{display:flex;gap:8px;margin-top:18px}
+.btn-generate{flex:1;padding:12px;background:linear-gradient(135deg,#FFB347,#F28482);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 10px 30px -8px rgba(242,132,130,.4)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{padding:12px 20px;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;font-weight:500;cursor:pointer;transition:.2s}
+.btn-secondary:hover{border-color:var(--accent)}
+.btn-sm{padding:6px 12px;font-size:.75rem}
+.result-panel{margin-top:24px;display:none}.result-panel.visible{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.result-badge{font-size:.7rem;font-weight:600;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:16px}
+.result-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-action{padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:.73rem;font-weight:500;cursor:pointer;font-family:inherit;color:var(--text2);display:flex;align-items:center;gap:4px;transition:.15s}
+.btn-action:hover{border-color:var(--text3);color:var(--text)}
+.btn-action.danger{color:#ef4444;border-color:#fecaca}.btn-action.danger:hover{background:#fef2f2}
+.btn-action.save{background:var(--green-bg);color:var(--green);border-color:#A7F3D0;font-weight:600}
+.script-card{background:var(--surface);border-radius:14px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative;margin-bottom:16px}
+.script-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FFB347,#F28482,#E5A1F5)}
+.script-title{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:12px}
+.script-content{font-size:.87rem;line-height:1.9;white-space:pre-wrap}
+.file-zone{border:2px dashed var(--border);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:.2s;margin-top:4px}
+.file-zone:hover{border-color:var(--accent)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-size:.8rem;font-weight:500;z-index:300;transition:.3s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.alert{padding:10px 16px;border-radius:10px;font-size:.8rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.alert-warn{background:#FEF3C7;color:#92400e;border:1px solid #FCD34D}
+.library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:20px}
+.library-card{background:var(--surface);border-radius:12px;padding:16px;border:1px solid var(--border)}
+.library-card .lc-preview{font-size:.75rem;color:var(--text2);line-height:1.5;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;display:-webkit-box}
+.library-card .lc-meta{font-size:.65rem;color:var(--accent);font-weight:600;margin-bottom:6px}
+.library-card .lc-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:1.2rem;font-weight:700;margin-bottom:18px}
+.modal .form-group{margin-bottom:12px}.modal .btn-row{margin-top:16px}
+.modal .modal-switch{text-align:center;margin-top:12px;font-size:.78rem;color:var(--text2)}
+.modal .modal-switch a{color:var(--accent);cursor:pointer;font-weight:600;text-decoration:none}
+.empty-state{text-align:center;padding:40px;color:var(--text3)}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}.persona-cards{grid-template-columns:repeat(2,1fr)}}
+.hidden{display:none!important}
+
+.brutal-cards{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto 20px}
+.b-card{width:270px;height:220px;translate:-3px -3px;border:3px solid #000;box-shadow:6px 6px 0 #000;overflow:hidden;transition:all .3s ease;position:relative;font-family:inherit}
+.b-card:hover{translate:-5px;box-shadow:8px 8px 0 #000}
+.b-card .ch{font-size:.8rem;font-weight:900;height:26px;background:#fff;padding:3px 12px;color:#000;border-bottom:3px solid #000;display:flex;align-items:center}
+.b-card .cb{padding:8px 14px;font-size:.8rem;font-weight:600;color:#1e293b;line-height:1.5}
+.b-card .cbtn{position:absolute;bottom:12px;left:14px;padding:4px 10px;border:2px solid #000;box-shadow:2px 2px 0 #000;font-weight:700;background:#4ade80;transition:all .2s ease;cursor:pointer;font-family:inherit;font-size:.72rem}
+.b-card .cbtn:hover{translate:1px 1px;box-shadow:1px 1px 0 #000;background:#1ac2ff}
+@media(max-width:750px){.brutal-cards{flex-direction:column;align-items:center}}
+
+
+.ripple-btn{font-family:inherit;font-weight:600;color:#e0e0e0;background:#1a1a2e;padding:8px 16px;border:1px solid #333;border-radius:.6rem;position:relative;cursor:pointer;overflow:hidden;font-size:.8rem;transition:.3s}
+.ripple-btn:hover{color:#fff;border-color:#6366f1}
+.ripple-btn span:not(:nth-child(6)){position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:20px;width:20px;background:#6366f1;border-radius:50%;transition:.6s ease;opacity:.8}
+.ripple-btn span:nth-child(6){position:relative;z-index:1}
+.ripple-btn span:nth-child(1){transform:translate(-3em,-3.5em)}
+.ripple-btn span:nth-child(2){transform:translate(-5.5em,1em)}
+.ripple-btn span:nth-child(3){transform:translate(-.1em,1.6em)}
+.ripple-btn span:nth-child(4){transform:translate(3.2em,1.2em)}
+.ripple-btn span:nth-child(5){transform:translate(3.2em,-3.5em)}
+.ripple-btn:hover span:not(:nth-child(6)){transform:translate(-50%,-50%) scale(4);transition:1.5s ease;opacity:.3}
+.pay-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:40px;background:#18181b;color:#fafafa;font-size:.9rem;font-weight:500;cursor:pointer;font-family:inherit;transition:.3s}
+.pay-btn:hover{background:#27272a}
+.pay-btn .svgIcon{width:18px;height:18px;fill:#fafafa;transition:.3s}
+.pay-btn:hover .svgIcon{fill:#a1a1aa;transform:translateX(3px)}
+.action-btn{border:2px solid #1a1a1a;border-radius:15px;background:transparent;color:#3b3b3b;cursor:pointer;display:inline-block;font-size:.75rem;font-weight:600;padding:6px 16px;text-align:center;text-decoration:none;transition:all .3s cubic-bezier(.23,1,.32,1);font-family:inherit}
+.action-btn:hover{color:#fff;background:#1a1a1a;box-shadow:0 8px 15px rgba(0,0,0,.25);transform:translateY(-2px)}
+.action-btn:active{box-shadow:none;transform:translateY(0)}
+.action-btn.danger{border-color:#dc2626;color:#dc2626}
+.action-btn.danger:hover{background:#dc2626;color:#fff}
+
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">✦ <span>星河AI</span></div>
+  <ul class="nav-links">
+    <li><button class="ripple-btn active" data-page="generator" onclick="switchPage('generator')"><span></span><span></span><span></span><span></span><span></span><span>🎬 生成</span></button></li>
+    <li><button class="ripple-btn" data-page="dubbing" onclick="switchPage('dubbing')"><span></span><span></span><span></span><span></span><span></span><span>🎤 配音</span></button></li><li><button class="ripple-btn" data-page="videos" onclick="switchPage('videos')"><span></span><span></span><span></span><span></span><span></span><span>🎥 视频库</span></button></li>
+    <li><button class="ripple-btn" data-page="library" onclick="switchPage('library')"><span></span><span></span><span></span><span></span><span></span><span>📚 文案库</span></button></li>
+    
+  </ul>
+  <div class="nav-right">
+    <span class="nav-points" id="pointsDisplay">⭐ <span id="pointBalance">0</span></span>
+    <span class="nav-diamonds" id="diamondsDisplay"><span class="dia-icon">💎</span> <span id="diamondBalance">0</span></span>
+    <a href="#" data-page="admin" style="font-size:.85rem;text-decoration:none;opacity:.5;cursor:pointer" title="管理后台">⚙️</a>
+    
+    <span id="usernameDisplay" style="font-size:.8rem;color:var(--text2)">未登录</span>
+    <button id="authBtn" class="pay-btn" style="font-size:.75rem;padding:7px 18px" onclick="if(window.currentUser){currentUser=null;updateUI();toast('已退出')}else{openAuth()}">登录<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg></button>
+  </div>
+</nav>
+
+<div class="page active" id="page-generator">
+<div class="brutal-cards"><div class="b-card" style="background:#ffb3c6"><div class="ch">🤖 AI智能文案</div><div class="cb">DeepSeek驱动，四大人设可选。<br>输入店型秒出爆款口播脚本。</div><button class="cbtn" onclick="switchPage('generator')">开始创作 →</button></div><div class="b-card" style="background:#fde68a"><div class="ch">🎤 声音克隆</div><div class="cb">上传音频，AI克隆你的声音。<br>用自己的声音朗读文案。</div><button class="cbtn" onclick="switchPage('dubbing')">去配音 →</button></div><div class="b-card" style="background:#a5f3fc"><div class="ch">🎬 对口型视频</div><div class="cb">上传视频，AI匹配口型。<br>文案+声音+画面三合一。</div><button class="cbtn" onclick="switchPage('dubbing')">去合成 →</button></div></div>
+
+<div class="container" style="padding-top:40px">
+<div class="section-title"><h2>🎬 AI智能生成口播脚本</h2><p>DeepSeek AI驱动 · 每次2积分 · 注册送600积分+600💎钻石</p></div>
+
+<div class="form-panel"><div class="form-grid">
+<div class="form-group"><label>商家类型</label><select id="bizType"><option value="">请选择</option><option>川菜馆</option><option>火锅店</option><option>烧烤店</option><option>面馆/粉店</option><option>小吃店</option><option>奶茶/饮品</option><option>烘焙/甜品</option><option>西餐/轻食</option><option>日料</option><option>大排档</option></select></div>
+<div class="form-group"><label>城市</label><input type="text" id="city" placeholder="如：成都锦江区"></div>
+<div class="form-group full"><label>人设（必选）</label><div class="persona-cards">
+<div class="persona-card active" data-p="regret"><span style="font-size:1.2rem;display:block">😅</span>后悔型</div>
+<div class="persona-card" data-p="gang"><span style="font-size:1.2rem;display:block">😤</span>杠精型</div>
+<div class="persona-card" data-p="honest"><span style="font-size:1.2rem;display:block">🤝</span>实在型</div>
+<div class="persona-card" data-p="craft"><span style="font-size:1.2rem;display:block">🔪</span>匠心型</div>
+</div><input type="hidden" id="persona" value="regret"></div>
+<div class="form-group"><label>内容类型</label><select id="contentType"><option value="story">小经历分享</option><option value="founder">创始人故事</option><option value="opinion">说观点</option><option value="pain">痛点极致化</option><option value="process">晒过程</option><option value="knowledge">教知识</option><option value="product">说产品</option></select></div>
+<div class="form-group"><label>时长</label><select id="duration"><option value="50">50秒</option><option value="60" selected>60秒</option><option value="90">90秒</option><option value="120">120秒</option></select></div>
+<div class="form-group full"><label>特殊细节</label><textarea id="extraDetails" placeholder="开了三年、招牌水煮鱼、老顾客叫老王..."></textarea></div>
+<div class="form-group full"><label>核心信息</label><textarea id="coreMessage" placeholder="最想让顾客记住的一件事..."></textarea></div></div>
+<div class="btn-row"><button id="btnGenerate" class="pay-btn" onclick="generate()">✨ AI生成脚本<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg></button></div></div>
+<div class="result-panel" id="resultPanel"><div class="result-header"><span class="result-badge">✅ AI已生成</span><div class="result-actions"><button class="action-btn" onclick="saveScript()">💾 保存</button><button class="action-btn" onclick="copyScript()">📋 复制</button><button class="action-btn" onclick="generate()">🔄 换一版</button><button class="action-btn" onclick="toDubbing()" style="background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;border-color:transparent">🎤 配音</button></div></div><div class="script-card"><div class="script-title" id="scriptMeta"></div><div class="script-content" id="scriptContent"></div></div></div>
+</div></div>
+
+<div class="page" id="page-dubbing"><div class="container" style="padding-top:40px">
+<div class="section-title"><h2>🎤 AI配音工作室</h2><p>文案 → 克隆声音 → 视频对口型</p></div>
+<div class="form-panel" style="max-width:800px;margin:0 auto"><div class="form-grid">
+<div class="form-group full"><label>📝 配音文案</label><textarea id="dubScript" placeholder="输入文案..." oninput="updateDubCost()"></textarea></div>
+<div class="form-group"><label>🎤 参考音频</label><div class="file-zone" id="dubAudioZone"><span id="dubAudioLabel">点击或拖拽上传 (5-15秒人声)</span></div><input type="file" id="dubAudioFile" accept=".wav,.mp3,.m4a,.ogg,.flac" hidden></div>
+<div class="form-group"><label>🎥 视频画面</label><div class="file-zone" id="dubVideoZone"><span id="dubVideoLabel">点击或拖拽上传 (闭嘴画面)</span></div><input type="file" id="dubVideoFile" accept=".mp4,.mov,.avi" hidden></div></div>
+
+<!-- 💎 费用估算卡片 -->
+<div class="dub-cost-card" id="dubCostCard">
+  <div class="cost-left">
+    <div class="cost-item">
+      <div class="cost-val" id="costEstSec">--</div>
+      <div class="cost-label">📏 预估时长(秒)</div>
+    </div>
+    <div class="cost-divider"></div>
+    <div class="cost-item">
+      <div class="cost-val">2 💎 / 10秒</div>
+      <div class="cost-label">💰 计费规则</div>
+    </div>
+  </div>
+  <div class="cost-total">
+    <span class="big-diamond">💎</span>
+    <span class="big-price" id="costEstTotal">--</span>
+    <span style="font-size:.75rem;color:var(--text2)">钻石</span>
+  </div>
+  <div class="cost-balance" id="costBalance">当前余额：-- 💎</div>
+</div>
+
+<div class="btn-row"><button id="dubGenBtn" class="pay-btn" onclick="dubGenerate()">🎬 开始配音合成<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg></button></div>
+<div id="dubResult" style="margin-top:16px"></div><div id="dubTtsPreview"></div>
+<p style="font-size:.7rem;color:var(--text3);margin-top:12px;text-align:center">VoxCPM2本地声音克隆 + 阿里云唇形同步 | 需启动本地服务</p></div></div></div>
+
+
+<div class="page" id="page-videos"><div class="container" style="padding-top:40px"><div class="section-title"><h2>🎥 视频库</h2><p>生成的配音视频</p></div><div class="library-grid" id="videoGrid"></div><div class="empty-state" id="videoEmpty"><div style="font-size:2rem;margin-bottom:10px">🎬</div><p>还没有视频</p></div></div></div>
+<div class="page" id="page-library"><div class="container" style="padding-top:40px"><div class="section-title"><h2>📚 我的文案</h2></div><div class="library-grid" id="libraryGrid"></div><div class="empty-state" id="libraryEmpty">📭 还没有保存文案</div></div></div>
+
+
+<div class="page" id="page-admin"><div class="container" style="padding-top:40px"><div class="section-title"><h2>🔑 管理后台</h2></div>
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px"><h3>🎫 生成邀请码</h3><div class="form-grid"><div class="form-group"><label>数量</label><select id="inviteCount"><option value="5">5</option><option value="10">10</option></select></div><div class="form-group"><label>赠送积分</label><input type="number" id="invitePoints" value="600"></div><div class="form-group"><label>赠送钻石</label><input type="number" id="inviteDiamonds" value="600"></div></div><div class="btn-row"><button class="btn-generate" onclick="genCodes()">生成</button></div><div id="inviteCodeList" style="margin-top:12px;font-size:.8rem"></div></div>
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px"><h3>🔑 DeepSeek API Key</h3>
+<div class="form-grid"><div class="form-group full"><label>API Key（用于AI脚本生成，存在浏览器本地）</label><div style="display:flex;gap:8px"><input type="password" id="apiKeyInput" placeholder="sk-..." style="flex:1"><button class="btn-generate" onclick="saveApiKey()" style="flex:0;width:auto;padding:8px 16px;font-size:.8rem">💾 保存</button></div></div></div><div style="margin-top:8px;font-size:.7rem;color:var(--text2)">当前：<span id="apiKeyStatus">未配置</span></div></div>
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px"><h3>💰 充值</h3><div class="form-grid"><div class="form-group"><label>用户名</label><input type="text" id="rechargeUser"></div><div class="form-group"><label>类型</label><select id="rechargeType"><option value="points">⭐ 积分</option><option value="diamonds">💎 钻石</option></select></div><div class="form-group"><label>数量</label><input type="number" id="rechargeAmount" value="100"></div></div><div class="btn-row"><button class="btn-generate" onclick="recharge()">充值</button></div></div>
+<div class="form-panel" style="max-width:700px;margin:0 auto"><h3>👥 用户列表</h3>
+<div id="userList"></div></div></div></div>
+
+<div class="modal-overlay" id="authModal"><div class="modal"><h2 id="authModalTitle">登录</h2>
+<div class="form-group"><label>用户名</label><input type="text" id="authUsername"></div>
+<div class="form-group"><label>密码</label><input type="password" id="authPassword"></div>
+<div class="form-group hidden" id="regCfmGrp"><label>确认密码</label><input type="password" id="authConfirmPw"></div>
+<div class="form-group hidden" id="regInvGrp"><label>邀请码</label><input type="text" id="authInviteCode"></div>
+<div class="btn-row"><button class="btn-generate" id="authDoBtn">登录</button></div>
+<div class="modal-switch"><a id="authSwitch" style="cursor:pointer">去注册</a></div>
+<div class="modal-switch"><a onclick="document.getElementById('authModal').classList.remove('active')" style="color:var(--text3);cursor:pointer">取消</a></div></div></div>
+
+<div class="modal-overlay" id="adminAuthModal"><div class="modal"><h2 id="adminAuthTitle">管理员登录</h2>
+<div class="form-group"><label>用户名</label><input type="text" id="adminAuthUser"></div>
+<div class="form-group"><label>密码</label><input type="password" id="adminAuthPass"></div>
+<div class="form-group hidden" id="adminCfmGrp"><label>确认密码</label><input type="password" id="adminAuthConfirm"></div>
+<div class="btn-row"><button class="btn-generate" id="adminAuthDoBtn">登录</button></div>
+<div class="modal-switch"><a onclick="document.getElementById('adminAuthModal').classList.remove('active')" style="color:var(--text3);cursor:pointer">取消</a></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ UTILS ═══
+function _(id){return document.getElementById(id)}
+function toast(m,d){var t=_('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},d||2000)}
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+var LS={get:function(k,d){try{var v=localStorage.getItem('hbs_'+k);return v?JSON.parse(v):d}catch(e){console.error('LS.get error:',e);return d}},set:function(k,v){try{localStorage.setItem('hbs_'+k,JSON.stringify(v))}catch(e){console.error('LS.set error:',e);alert('localStorage写入失败: '+e.message)}}};
+
+// ═══ AUTH ═══
+var currentUser=null,authMode='login',adminOk=false;
+var PERSONAS={regret:{name:'后悔型',icon:'😅'},gang:{name:'杠精型',icon:'😤'},honest:{name:'实在型',icon:'🤝'},craft:{name:'匠心型',icon:'🔪'}};
+var CT={founder:'创始人故事',story:'小经历分享',opinion:'说观点',pain:'痛点极致化',process:'晒过程',knowledge:'教知识',product:'说产品'};
+var currentScript=null;
+
+function openAuth(){authMode='login';updateAuthForm();_('authModal').classList.add('active')}
+function updateAuthForm(){
+  _('authModalTitle').textContent=authMode==='login'?'登录':'注册';
+  _('regCfmGrp').classList.toggle('hidden',authMode==='login');
+  _('regInvGrp').classList.toggle('hidden',authMode==='login');
+  _('authDoBtn').textContent=authMode==='login'?'登录':'注册';
+  _('authSwitch').textContent=authMode==='login'?'去注册':'去登录';
+}
+_('authBtn').onclick=function(){if(currentUser){currentUser=null;updateUI();toast('已退出')}else openAuth()};
+_('authSwitch').onclick=function(){authMode=authMode==='login'?'register':'login';updateAuthForm()};
+_('authDoBtn').onclick=async function(){
+  var u=_('authUsername').value.trim(),p=_('authPassword').value.trim();
+  if(!u||!p)return;
+  if(authMode==='register'){
+    if(p!==_('authConfirmPw').value.trim()){toast('密码不一致');return}
+    var ic=_('authInviteCode').value.trim();if(!ic){toast('需要邀请码');return}
+    var codes=LS.get('invite_codes',[]),idx=codes.findIndex(function(c){return c.code===ic&&!c.used});
+    if(idx===-1){toast('邀请码无效');return}
+    codes[idx].used=true;codes[idx].usedBy=u;codes[idx].usedAt=new Date().toISOString();LS.set('invite_codes',codes);
+    var users=LS.get('users',{});if(users[u]){toast('用户名已存在');return}
+    var pts=codes[idx].points||600, dia=codes[idx].diamonds||600;
+    users[u]={password:p,points:pts,diamonds:dia,createdAt:new Date().toISOString()};LS.set('users',users);
+    localStorage.setItem('hbs_last_user',u);
+    currentUser={username:u,points:pts,diamonds:dia,createdAt:new Date().toISOString()};
+    _('authModal').classList.remove('active');updateUI();
+    toast('注册成功！赠送 '+pts+'积分 + '+dia+'💎钻石');return;
+  }
+  var users=LS.get('users',{});if(!users[u]||users[u].password!==p){toast('用户名或密码错误');return}
+  currentUser={username:u,points:users[u].points||0,diamonds:users[u].diamonds||0,createdAt:users[u].createdAt};
+  localStorage.setItem('hbs_last_user',u);
+  _('authModal').classList.remove('active');updateUI();toast('登录成功');
+};
+function updateUI(){
+  if(currentUser){
+    _('usernameDisplay').textContent=currentUser.username;_('authBtn').textContent='退出';
+    _('pointsDisplay').style.display='flex';_('pointBalance').textContent=currentUser.points;
+    _('diamondsDisplay').style.display='flex';_('diamondBalance').textContent=currentUser.diamonds||0;
+    _('btnGenerate').disabled=currentUser.points<2;
+    var aw=_('apiWarning');if(aw)aw.classList.add('hidden');
+  }else{
+    _('usernameDisplay').textContent='未登录';_('authBtn').textContent='登录';
+    _('pointsDisplay').style.display='none';_('diamondsDisplay').style.display='none';_('btnGenerate').disabled=true;
+  }
+  updateDubCost();
+}
+
+// ═══ ADMIN AUTH ═══
+function openAdmin(){
+  var c=LS.get('admin_creds',null);
+  if(!c){_('adminAuthTitle').textContent='首次设置管理员';_('adminCfmGrp').classList.remove('hidden')}
+  else{_('adminAuthTitle').textContent='管理员登录';_('adminCfmGrp').classList.add('hidden')}
+  _('adminAuthUser').value='';_('adminAuthPass').value='';_('adminAuthConfirm').value='';
+  _('adminAuthModal').classList.add('active');
+}
+_('adminAuthDoBtn').onclick=function(){
+  var u=_('adminAuthUser').value.trim(),p=_('adminAuthPass').value.trim();
+  if(!u||!p)return;
+  var c=LS.get('admin_creds',null);
+  if(!c){
+    if(p!==_('adminAuthConfirm').value.trim()){toast('密码不一致');return}
+    LS.set('admin_creds',{username:u,password:p});adminOk=true;
+    _('adminAuthModal').classList.remove('active');switchPage('admin');toast('管理员已设置');return;
+  }
+  if(u===c.username&&p===c.password){adminOk=true;_('adminAuthModal').classList.remove('active');switchPage('admin')}
+  else toast('用户名或密码错误');
+};
+
+// ═══ PAGES ═══
+function switchPage(page){
+  if(page==='admin'&&!adminOk){openAdmin();return}
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  var pg=_('page-'+page);if(pg)pg.classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(function(a){a.classList.remove('active')});
+  var link=document.querySelector('.nav-links a[data-page="'+page+'"]');if(link)link.classList.add('active');
+  if(page==='library')renderLibrary();
+  if(page==='admin'){renderCodeList();renderUserList();updateApiKeyStatus()}
+  if(page==='dubbing'){setTimeout(function(){setupDub('audio');setupDub('video');updateDubCost()},300)};if(page==='videos')renderVideoLib()
+}
+document.querySelectorAll('.nav-links a').forEach(function(a){
+  a.onclick=function(e){e.preventDefault();switchPage(this.dataset.page)}
+});
+document.querySelector('.nav-right a[data-page="admin"]').onclick=function(e){e.preventDefault();switchPage('admin')};
+
+// ═══ 💎 钻石计费 ═══
+var CHARS_PER_SEC=4;    // 中文语速: 约4字/秒
+var DIAMONDS_PER_10S=2; // 每10秒2钻石
+
+function calcDubCost(){
+  var text=_('dubScript').value.trim();
+  if(!text) return {seconds:0, cost:0};
+  var estSec=Math.ceil(text.length/CHARS_PER_SEC);
+  var cost=Math.max(2, Math.ceil(estSec/10)*DIAMONDS_PER_10S);
+  return {seconds:estSec, cost:cost};
+}
+
+function updateDubCost(){
+  var c=calcDubCost();
+  _('costEstSec').textContent=c.seconds||'--';
+  _('costEstTotal').textContent=c.cost||'--';
+  if(currentUser){
+    var d=currentUser.diamonds||0;
+    _('costBalance').textContent='当前余额：'+d+' 💎';
+    _('costBalance').classList.toggle('cost-insufficient', c.cost>0 && d<c.cost);
+  }else{
+    _('costBalance').textContent='请先登录查看余额';
+    _('costBalance').classList.remove('cost-insufficient');
+  }
+}
+
+// ═══ GENERATE ═══
+var FW="你是顶级口播脚本写手，帮餐饮老板写抖音/小红书爆款文案。你的脚本不像文案，而像一个真的餐饮老板在跟熟人聊天。\n\n商家：BIZ | 城市：CITY | 人设：PERSONA | 类型：CTYPE | 时长：DUR秒\n细节：EXTRA | 核心：CORE\n\n【爆款公式】老问题+新情绪+高强代入\n【五大锚点】生存焦虑|群体对比|价值冲突|情绪自证|共鸣认同\n【四大餐饮人设】后悔型(自嘲凡尔赛)|杠精型(正面刚)|实在型(听劝人设)|匠心型(品质红线)\n【口播结构】开头一句话抓注意力→展开细节用事说话→自然收尾不喊口号\n【去AI味铁律】禁止：引号对白、顾客说朋友问、金句升华、欢迎来坐关注我、排比对仗\n必须：像跟邻居聊天，碎句子带语气词，数字取代形容词，说完就停\n\n‼️输出铁律：直接输出纯文案正文。严禁时间标注如[0-3秒钩子][收尾]，严禁分段标题，只要文案本身。";
+
+function buildPrompt(){
+  var p=PERSONAS[_('persona').value]||PERSONAS.regret;
+  var biz=_('bizType').value||'餐饮店',city=_('city').value||'本地';
+  var ct=CT[_('contentType').value]||'小经历分享',dur=parseInt(_('duration').value)||60;
+  return FW.replace('BIZ',biz).replace('CITY',city).replace('PERSONA',p.name).replace('CTYPE',ct).replace('DUR',String(dur)).replace('EXTRA',_('extraDetails').value||'编真实细节').replace('CORE',_('coreMessage').value||'自然带出');
+}
+
+function getApiKey(){
+  return localStorage.getItem('hbs_api_key')||'';
+}
+
+async function generate(){
+  if(!currentUser){toast('请先登录');openAuth();return}
+  if(currentUser.points<2){toast('积分不足，生成脚本需要2积分');return}
+  var apiKey=getApiKey();
+  if(!apiKey){toast('未配置DeepSeek API Key，请联系管理员');return}
+  var b=_('btnGenerate');b.disabled=true;b.textContent='🤖 创作中...';
+  try{
+    var r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:buildPrompt()},{role:'user',content:'直接输出口播文案，不要标注'}],temperature:0.95,max_tokens:2000})});
+    if(!r.ok)throw new Error((await r.json()).error.message);
+    var text=(await r.json()).choices[0].message.content;
+    currentScript={text:text,meta:_('bizType').value+'·'+PERSONAS[_('persona').value].name+'·'+_('duration').value+'秒'};
+    _('scriptMeta').textContent=currentScript.meta;_('scriptContent').textContent=text;
+    _('resultPanel').classList.add('visible');_('resultPanel').scrollIntoView({behavior:'smooth'});
+    currentUser.points-=2;var users=LS.get('users',{});users[currentUser.username].points=currentUser.points;LS.set('users',users);updateUI();
+  }catch(e){toast('生成失败: '+e.message)}
+  b.disabled=false;b.textContent='✨ AI生成脚本';
+}
+
+function saveScript(){if(!currentScript)return;var scripts=LS.get('scripts',[]);scripts.unshift({id:Date.now().toString(36),text:currentScript.text,meta:currentScript.meta,createdAt:new Date().toISOString()});LS.set('scripts',scripts);toast('已保存')}
+function copyScript(){navigator.clipboard.writeText(_('scriptContent').textContent).then(function(){toast('已复制')})}
+function toDubbing(){if(currentScript)_('dubScript').value=currentScript.text;switchPage('dubbing');setTimeout(updateDubCost,100)}
+
+// ═══ LIBRARY ═══
+function renderLibrary(){
+  var scripts=LS.get('scripts',[]);
+  if(!scripts.length){_('libraryEmpty').style.display='block';_('libraryGrid').innerHTML='';return}
+  _('libraryEmpty').style.display='none';
+  _('libraryGrid').innerHTML=scripts.map(function(s){return '<div class="library-card"><div class="lc-meta">'+esc(s.meta)+'</div><div class="lc-preview">'+esc((s.text||'').substring(0,200))+'...</div><div class="lc-actions"><button class="action-btn" onclick="viewScript(\''+s.id+'\')">查看</button><button class="action-btn danger" onclick="delScript(\''+s.id+'\')">删除</button></div></div>'}).join('');
+}
+function viewScript(id){var s=LS.get('scripts',[]).find(function(x){return x.id===id});if(!s)return;currentScript=s;_('scriptMeta').textContent=s.meta;_('scriptContent').textContent=s.text;_('resultPanel').classList.add('visible');switchPage('generator')}
+function delScript(id){LS.set('scripts',LS.get('scripts',[]).filter(function(x){return x.id!==id}));renderLibrary();toast('已删除')}
+
+// ═══ DUBBING ═══
+var DUB='http://127.0.0.1:8080',ds={audio:null,video:null};
+function setupDub(type){
+  var t=type.charAt(0).toUpperCase()+type.slice(1),zone=_('dub'+t+'Zone'),input=_('dub'+t+'File'),label=_('dub'+t+'Label');
+  if(!zone||!input)return;
+  var defs={audio:'点击或拖拽上传 (5-15秒人声)',video:'点击或拖拽上传 (闭嘴画面)'};
+  function handle(f){
+    if(!f)return;ds[type]=f;label.textContent='✅ '+f.name;zone.style.borderColor='#22c55e';zone.style.color='#22c55e';
+    var url=URL.createObjectURL(f),pid='dub'+t+'Preview',old=_('pid');if(old)old.remove();
+    var el=document.createElement(type==='audio'?'audio':'video');el.id=pid;el.controls=true;
+    el.style.cssText='width:100%;margin-top:10px;border-radius:10px'+(type==='video'?';max-height:200px':'');
+    zone.parentNode.appendChild(el);el.src=url;
+    var did='dub'+t+'Del';if(!_(did)){var d=document.createElement('button');d.id=did;d.textContent='✕ 移除';
+      d.style.cssText='margin-top:6px;padding:4px 12px;font-size:.7rem;border:1px solid #fecaca;border-radius:6px;background:#fef2f2;color:#ef4444;cursor:pointer';
+      d.onclick=function(){ds[type]=null;input.value='';label.textContent=defs[type];zone.style.borderColor='';zone.style.color='';var pv=_(pid);if(pv)pv.remove();d.remove()};
+      zone.parentNode.appendChild(d)}
+    toast('✅ 已上传: '+f.name);
+  }
+  zone.onclick=function(){input.click()};input.onchange=function(){handle(input.files[0])};
+  zone.addEventListener('dragover',function(e){e.preventDefault();zone.style.borderColor='#818cf8'});
+  zone.addEventListener('dragleave',function(){zone.style.borderColor=''});
+  zone.addEventListener('drop',function(e){e.preventDefault();zone.style.borderColor='';handle(e.dataTransfer.files[0])});
+}
+document.addEventListener('dragover',function(e){e.preventDefault()});
+document.addEventListener('drop',function(e){e.preventDefault()});
+
+async function dubGenerate(){
+  var s=_('dubScript').value.trim();if(!s)return toast('请输入文案');
+  if(!currentUser){toast('请先登录');openAuth();return}
+  if(!ds.audio)return toast('请上传参考音频');if(!ds.video)return toast('请上传视频');
+
+  var cost=calcDubCost();
+  if((currentUser.diamonds||0)<cost.cost){toast('💎钻石不足！需要 '+cost.cost+' 钻石，当前余额 '+(currentUser.diamonds||0));return}
+
+  var b=_('dubGenBtn');b.disabled=true;b.textContent='⏳ 克隆声音...';
+  try{var fd=new FormData();fd.append('text',s);fd.append('ref_audio',ds.audio);
+    var r=await fetch(DUB+'/api/tts-public',{method:'POST',body:fd});
+    if(!r.ok){var e=await r.json();toast(e.detail);b.disabled=false;b.textContent='🎬 开始配音合成';return}
+    var blob=await r.blob();_('dubTtsPreview').innerHTML='<div style="background:var(--green-bg);border:1px solid #A7F3D0;border-radius:10px;padding:12px;margin-top:8px"><p style="color:var(--green);font-weight:600">✅ 声音克隆完成</p><audio controls src="'+URL.createObjectURL(blob)+'" style="width:100%;margin-top:8px"></audio></div>';
+  }catch(e){toast('连接失败，请确认本地服务已启动');b.disabled=false;b.textContent='🎬 开始配音合成';return}
+  b.textContent='⏳ 唇形同步...';_('dubResult').innerHTML='<div class="alert alert-warn">⏳ 云端唇形同步，预计1-3分钟...</div>';
+  try{var fd2=new FormData();fd2.append('text',s);fd2.append('ref_audio',ds.audio);fd2.append('video',ds.video);
+    var r2=await fetch(DUB+'/api/generate-public',{method:'POST',body:fd2});
+    if(!r2.ok){var e2=await r2.json();toast(e2.detail);b.disabled=false;b.textContent='🎬 开始配音合成';return}
+    // 💎 扣费
+    currentUser.diamonds=(currentUser.diamonds||0)-cost.cost;var users=LS.get('users',{});users[currentUser.username].diamonds=currentUser.diamonds;LS.set('users',users);updateUI();
+    var d=await r2.json();dubPoll(d.task_id);
+  }catch(e){toast('连接失败')}b.disabled=false;b.textContent='🎬 开始配音合成';
+}
+async function dubPoll(tid){var el=_('dubResult');
+  for(var i=0;i<180;i++){await new Promise(function(r){setTimeout(r,3000)});
+    try{var r=await fetch(DUB+'/api/tasks-public/'+tid);if(!r.ok)continue;var d=await r.json();
+      if(d.task.status==='done'){el.innerHTML='<div class="script-card"><div class="script-title">✅ 配音完成</div><video controls src="'+DUB+'/api/download-public/'+tid+'" style="width:100%;border-radius:10px;max-height:350px"></video><div class="btn-row"><a class="btn-generate" href="'+DUB+'/api/download-public/'+tid+'" target="_blank" style="text-decoration:none">⬇ 下载视频</a></div></div>';toast('合成完成！');var vlib=LS.get('videos',[]);vlib.unshift({id:tid,url:DUB+'/api/download-public/'+tid,text:(_('dubScript').value||'').substring(0,50),createdAt:new Date().toISOString()});LS.set('videos',vlib);return}
+      if(d.task.status==='failed'){el.innerHTML='<div class="alert alert-warn">❌ 失败: '+(d.task.error_msg||'')+'</div>';return}
+    }catch(e){}el.innerHTML='<div class="alert alert-warn">⏳ 处理中...('+Math.round(i*3/60)+'分钟)</div>';}
+}
+
+
+function renderVideoLib(){
+  var v=LS.get("videos",[]);
+  if(!v.length){_("videoEmpty").style.display="block";_("videoGrid").innerHTML="";return}
+  _("videoEmpty").style.display="none";
+  _("videoGrid").innerHTML=v.map(function(x){return '<div class="library-card"><div class="lc-meta">'+esc(x.text||"")+'</div><video controls src="'+x.url+'" style="width:100%;border-radius:10px;max-height:200px;margin:8px 0"></video><div class="lc-actions"><a class="action-btn" href="'+x.url+'" download>⬇ 下载</a><button class="action-btn danger" onclick="delVideo('+x.id+')">删除</button></div></div>'}).join("");
+}
+function delVideo(id){LS.set("videos",LS.get("videos",[]).filter(function(x){return x.id!==id}));renderVideoLib();toast("已删除")}
+
+// ═══ ADMIN ═══
+function saveApiKey(){
+  var key=_('apiKeyInput').value.trim();
+  if(!key||!key.startsWith('sk-')){toast('请输入有效的DeepSeek API Key (sk-开头)');return}
+  localStorage.setItem('hbs_api_key',key);
+  _('apiKeyInput').value='';
+  updateApiKeyStatus();
+  toast('API Key 已保存');
+}
+
+function updateApiKeyStatus(){
+  var key=localStorage.getItem('hbs_api_key')||'';
+  var st=_('apiKeyStatus');if(!st)return;
+  if(key){
+    st.textContent='已配置 ('+key.substring(0,10)+'...)';
+    st.style.color='var(--green)';
+  }else{
+    st.textContent='未配置';
+    st.style.color='var(--text3)';
+  }
+}
+
+function genCodes(){
+  var n=parseInt(_('inviteCount').value)||5,p=parseInt(_('invitePoints').value)||600,d=parseInt(_('inviteDiamonds').value)||600,codes=LS.get('invite_codes',[]);
+  for(var i=0;i<n;i++)codes.push({code:'HBS-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substr(2,5).toUpperCase(),points:p,diamonds:d,used:false});
+  LS.set('invite_codes',codes);renderCodeList();toast('已生成'+n+'个码');
+}
+function renderCodeList(){
+  var c=LS.get('invite_codes',[]),u=c.filter(function(x){return!x.used}),s=c.filter(function(x){return x.used});
+  _('inviteCodeList').innerHTML='<p style="color:var(--green);font-weight:600">未使用('+u.length+')</p>'+u.slice(-20).map(function(x){return '<div style="margin:4px 0;padding:4px;background:var(--green-bg);border-radius:4px"><code>'+x.code+'</code> ⭐'+x.points+'积分 + 💎'+(x.diamonds||600)+'钻石</div>'}).join('')+'<p style="margin-top:8px;color:var(--text3)">已使用('+s.length+')</p>';
+}
+function recharge(){
+  var u=_('rechargeUser').value.trim(),type=_('rechargeType').value,amt=parseInt(_('rechargeAmount').value);if(!u||!amt)return;
+  try{
+    var raw=localStorage.getItem('hbs_users'),users=raw?JSON.parse(raw):{};
+    if(!users[u]){toast('用户不存在');return}
+    if(type==='points'){users[u].points=(users[u].points||0)+amt}else{users[u].diamonds=(users[u].diamonds||0)+amt}
+    localStorage.setItem('hbs_users',JSON.stringify(users));renderUserList();
+    if(currentUser&&currentUser.username===u){currentUser.points=users[u].points;currentUser.diamonds=users[u].diamonds||0;updateUI()}
+    toast(u+' +'+amt+(type==='points'?' ⭐积分':' 💎钻石'));
+  }catch(e){console.error('recharge error:',e);toast('充值失败')}
+}
+function renderUserList(){
+  var ul=_('userList');if(!ul)return;
+  var rawUsers=localStorage.getItem('hbs_users');
+  if(!rawUsers){ul.innerHTML='<p style="text-align:center;padding:24px;color:var(--text3)">暂无用户</p>';return}
+  var users;try{users=JSON.parse(rawUsers)}catch(e){ul.innerHTML='<p style="color:#ef4444">数据解析失败</p>';return}
+  var names=Object.keys(users);
+  if(!names.length){ul.innerHTML='<p style="text-align:center;padding:24px;color:var(--text3)">暂无用户</p>';return}
+  var html='<div style="display:grid;gap:10px">';
+  for(var j=0;j<names.length;j++){
+    var name=names[j],u=users[name];
+    var pts=u.points||0,dia=u.diamonds||0;
+    var date=u.createdAt?new Date(u.createdAt).toLocaleDateString('zh-CN'):'-';
+    html+='<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;flex-wrap:wrap">'+
+      '<div style="min-width:80px"><b style="font-size:.9rem">'+esc(name)+'</b><div style="font-size:.65rem;color:var(--text3)">'+date+'</div></div>'+
+      '<div style="display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:8px;padding:6px 12px">'+
+        '<span style="font-size:.75rem;font-weight:600">⭐积分</span>'+
+        '<input type="number" value="'+pts+'" data-user="'+esc(name)+'" data-field="points" onchange="updateUserField(this)" style="width:72px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;text-align:center;font-family:inherit;font-weight:600;color:var(--accent2)">'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:8px;padding:6px 12px">'+
+        '<span style="font-size:.75rem;font-weight:600">💎钻石</span>'+
+        '<input type="number" value="'+dia+'" data-user="'+esc(name)+'" data-field="diamonds" onchange="updateUserField(this)" style="width:72px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;text-align:center;font-family:inherit;font-weight:600;color:#5b21b6">'+
+      '</div>'+
+      '<button onclick="deleteUser(\''+esc(name)+'\')" class="action-btn danger" style="font-size:.7rem;padding:5px 10px;margin-left:auto">删除</button>'+
+    '</div>';
+  }
+  ul.innerHTML=html+'</div>';
+}
+
+function updateUserField(input){
+  var username=input.dataset.user;
+  var field=input.dataset.field;
+  var val=parseInt(input.value);
+  if(isNaN(val)||val<0){input.value=0;val=0}
+  try{
+    var raw=localStorage.getItem('hbs_users');
+    var users=raw?JSON.parse(raw):{};
+    if(!users[username]){toast('用户不存在');return}
+    var oldVal=users[username][field]||0;
+    users[username][field]=val;
+    localStorage.setItem('hbs_users',JSON.stringify(users));
+    if(currentUser&&currentUser.username===username){currentUser[field]=val;updateUI()}
+    var label=field==='points'?'⭐积分':'💎钻石';
+    if(val!==oldVal)toast(username+' '+label+' → '+val);
+  }catch(e){console.error('updateUserField error:',e);toast('修改失败')}
+}
+
+function deleteUser(username){
+  if(!confirm('确定删除用户「'+username+'」？'))return;
+  try{
+    var raw=localStorage.getItem('hbs_users');
+    if(!raw)return;
+    // 备份
+    localStorage.setItem('hbs_users_backup',raw);
+    var users=JSON.parse(raw);
+    if(!users[username]){toast('用户不存在');return}
+    delete users[username];
+    var newRaw=JSON.stringify(users);
+    localStorage.setItem('hbs_users',newRaw);
+    // 验证
+    var verify=localStorage.getItem('hbs_users');
+    if(!verify||verify===raw){throw new Error('写入验证失败')}
+    localStorage.removeItem('hbs_users_backup');
+    renderUserList();
+    toast('已删除 '+username);
+  }catch(e){
+    console.error('deleteUser error:',e);
+    var backup=localStorage.getItem('hbs_users_backup');
+    if(backup){localStorage.setItem('hbs_users',backup);localStorage.removeItem('hbs_users_backup')}
+    toast('删除失败，数据已恢复');
+  }
+}
+
+
+// ═══ MISC ═══
+function toggleTheme(){var h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');localStorage.setItem('hbs_theme',h.getAttribute('data-theme'))}
+document.querySelectorAll('.persona-card').forEach(function(c){c.onclick=function(){document.querySelectorAll('.persona-card').forEach(function(x){x.classList.remove('active')});c.classList.add('active');_('persona').value=c.dataset.p}});
+
+(function init(){
+  var t=localStorage.getItem('hbs_theme');if(t)document.documentElement.setAttribute('data-theme',t);
+  var lu=localStorage.getItem('hbs_last_user');if(lu){var users=LS.get('users',{});if(users[lu]){currentUser={username:lu,points:users[lu].points||0,diamonds:users[lu].diamonds||0,createdAt:users[lu].createdAt}}}
+  updateUI();
+})();
+</script>
+</body>
+</html>
