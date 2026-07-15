@@ -231,6 +231,7 @@ body{background:var(--bg);font-family:'PingFang SC','Microsoft YaHei',sans-serif
 
 <div class="toast" id="toast"></div>
 
+<script src="config.js"></script>
 <script>
 // ═══ UTILS ═══
 function _(id){return document.getElementById(id)}
@@ -365,7 +366,8 @@ function buildPrompt(){
 }
 
 function getApiKey(){
-  return localStorage.getItem('hbs_api_key')||'';
+  // 优先：服务器全局配置（跨设备生效），其次：本地localStorage（单设备覆盖）
+  return window.__API_KEY || localStorage.getItem('hbs_api_key')||'';
 }
 
 async function generate(){
