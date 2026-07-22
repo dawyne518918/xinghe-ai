@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>星河AI + 智能配音</title>
+<style>
+/* ═══════════ CSS Variables ═══════════ */
+:root {
+  --bg: #F8FAFC;
+  --surface: #fff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --accent: #F28482;
+  --accent2: #FFB347;
+  --green: #059669;
+  --green-bg: #ECFDF5;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --red: #ef4444;
+  --red-bg: #fef2f2;
+  --yellow: #f59e0b;
+  --yellow-bg: #fffbeb;
+}
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --green-bg: #064e3b;
+  --purple-bg: #1e1b4b;
+  --red-bg: #450a0a;
+  --yellow-bg: #422006;
+}
+
+/* ═══════════ Reset ═══════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ═══════════ Navigation ═══════════ */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.nav-logo {
+  font-size: 1.1rem; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-logo span {
+  background: linear-gradient(90deg, #FFB347, #E5A1F5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nav-links {
+  display: flex; gap: 4px; list-style: none; align-items: center;
+}
+.nav-links button {
+  text-decoration: none; color: var(--text2); font-size: .8rem; font-weight: 500;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  padding: 5px 10px; border-radius: 7px; transition: .15s;
+}
+.nav-links button:hover { color: var(--text); background: var(--bg); }
+.nav-links button.active { color: var(--accent); font-weight: 600; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+
+/* Points & Diamonds display */
+.nav-points, .nav-diamonds {
+  align-items: center; font-weight: 600; white-space: nowrap; cursor: default;
+  padding: 4px 10px; border-radius: 12px;
+}
+.nav-points {
+  display: none; font-size: .75rem; color: var(--accent2);
+  background: #FFF8F0; border: 1px solid #FED7AA;
+}
+.nav-diamonds {
+  display: none; gap: 5px; font-size: .78rem; color: #5b21b6;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1.5px solid #c4b5fd; border-radius: 20px; padding: 5px 13px;
+}
+[data-theme="dark"] .nav-diamonds { color: #c4b5fd; background: linear-gradient(135deg, #1e1b4b, #312e81); border-color: #6366f1; }
+.nav-diamonds .dia-icon { font-size: .9rem; filter: drop-shadow(0 1px 2px rgba(99,102,241,.4)); }
+
+/* ═══════════ Buttons ═══════════ */
+.btn-theme {
+  width: 30px; height: 30px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  cursor: pointer; font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-generate {
+  flex: 1; padding: 12px;
+  background: linear-gradient(135deg, #FFB347, #F28482);
+  color: #fff; border: none; border-radius: 10px;
+  font-size: .9rem; font-weight: 600; cursor: pointer; transition: .25s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-generate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px -8px rgba(242,132,130,.4);
+}
+.btn-generate:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-secondary {
+  padding: 12px 20px; background: var(--surface); color: var(--text);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: .85rem; font-weight: 500; cursor: pointer; transition: .2s;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+.btn-sm { padding: 6px 12px; font-size: .75rem; }
+
+/* Action buttons */
+.action-btn {
+  border: 2px solid #1a1a1a; border-radius: 15px;
+  background: transparent; color: #3b3b3b; cursor: pointer;
+  display: inline-block; font-size: .75rem; font-weight: 600;
+  padding: 6px 16px; text-align: center; text-decoration: none;
+  transition: all .3s cubic-bezier(.23,1,.32,1); font-family: inherit;
+}
+.action-btn:hover {
+  color: #fff; background: #1a1a1a;
+  box-shadow: 0 8px 15px rgba(0,0,0,.25); transform: translateY(-2px);
+}
+.action-btn:active { box-shadow: none; transform: translateY(0); }
+.action-btn.danger { border-color: #dc2626; color: #dc2626; }
+.action-btn.danger:hover { background: #dc2626; color: #fff; }
+.action-btn.save { background: var(--green-bg); color: var(--green); border-color: #A7F3D0; font-weight: 600; }
+
+/* Pay button (pill style) */
+.pay-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border: none; border-radius: 40px;
+  background: #18181b; color: #fafafa; font-size: .9rem;
+  font-weight: 500; cursor: pointer; font-family: inherit; transition: .3s;
+}
+.pay-btn:hover { background: #27272a; }
+.pay-btn .svgIcon { width: 18px; height: 18px; fill: #fafafa; transition: .3s; }
+.pay-btn:hover .svgIcon { fill: #a1a1aa; transform: translateX(3px); }
+
+/* Ripple button */
+.ripple-btn {
+  font-family: inherit; font-weight: 600; color: #e0e0e0;
+  background: #1a1a2e; padding: 8px 16px; border: 1px solid #333;
+  border-radius: .6rem; position: relative; cursor: pointer;
+  overflow: hidden; font-size: .8rem; transition: .3s;
+}
+.ripple-btn:hover { color: #fff; border-color: #6366f1; }
+.ripple-btn span:not(:nth-child(6)) {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%,-50%); height: 20px; width: 20px;
+  background: #6366f1; border-radius: 50%; transition: .6s ease; opacity: .8;
+}
+.ripple-btn span:nth-child(6) { position: relative; z-index: 1; }
+.ripple-btn span:nth-child(1) { transform: translate(-3em,-3.5em); }
+.ripple-btn span:nth-child(2) { transform: translate(-5.5em,1em); }
+.ripple-btn span:nth-child(3) { transform: translate(-.1em,1.6em); }
+.ripple-btn span:nth-child(4) { transform: translate(3.2em,1.2em); }
+.ripple-btn span:nth-child(5) { transform: translate(3.2em,-3.5em); }
+.ripple-btn:hover span:not(:nth-child(6)) { transform: translate(-50%,-50%) scale(4); transition: 1.5s ease; opacity: .3; }
+
+/* ═══════════ Page Layout ═══════════ */
+.page { display: none; }
+.page.active { display: block; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+.section-title { text-align: center; margin-bottom: 24px; }
+.section-title h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.section-title p { color: var(--text2); font-size: .85rem; }
+
+/* ═══════════ Form ═══════════ */
+.form-panel {
+  background: var(--surface); border-radius: 18px; padding: 28px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label {
+  font-size: .7rem; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.form-group select, .form-group textarea, .form-group input {
+  padding: 9px 12px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: .82rem; font-family: inherit;
+  color: var(--text); background: var(--bg); outline: none; resize: vertical;
+}
+.form-group select:focus, .form-group textarea:focus, .form-group input:focus {
+  border-color: #FFB347;
+  box-shadow: 0 0 0 3px rgba(255,179,71,.15);
+}
+.form-group textarea { min-height: 60px; font-size: .78rem; }
+
+/* Persona cards */
+.persona-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 4px; }
+.persona-card {
+  padding: 10px 6px; border: 2px solid var(--border); border-radius: 10px;
+  text-align: center; cursor: pointer; transition: .2s; font-size: .75rem; font-weight: 500;
+}
+.persona-card:hover { border-color: var(--accent); }
+.persona-card.active {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #FFF1F0, #FFF8F0);
+  font-weight: 600;
+}
+.btn-row { display: flex; gap: 8px; margin-top: 18px; }
+
+/* ═══════════ Result & Script ═══════════ */
+.result-panel { margin-top: 24px; display: none; }
+.result-panel.visible { display: block; }
+.result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.result-badge {
+  font-size: .7rem; font-weight: 600; color: var(--green);
+  background: var(--green-bg); padding: 5px 12px; border-radius: 16px;
+}
+.result-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.script-card {
+  background: var(--surface); border-radius: 14px; padding: 28px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06); position: relative; margin-bottom: 16px;
+}
+.script-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #FFB347, #F28482, #E5A1F5);
+}
+.script-title {
+  font-size: .65rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .8px; color: var(--accent); margin-bottom: 12px;
+}
+.script-content { font-size: .87rem; line-height: 1.9; white-space: pre-wrap; }
+
+/* ═══════════ File Upload ═══════════ */
+.file-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 24px; text-align: center; cursor: pointer; transition: .2s; margin-top: 4px;
+}
+.file-zone:hover { border-color: var(--accent); }
+
+/* ═══════════ Dubbing Cost Card ═══════════ */
+.dub-cost-card {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1.5px solid #c4b5fd; border-radius: 14px;
+  padding: 16px 20px; margin-top: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; transition: .3s;
+}
+[data-theme="dark"] .dub-cost-card { background: linear-gradient(135deg, #1e1b4b, #312e81); border-color: #6366f1; }
+.dub-cost-card .cost-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dub-cost-card .cost-item { text-align: center; }
+.dub-cost-card .cost-val { font-size: 1.2rem; font-weight: 800; color: #5b21b6; }
+[data-theme="dark"] .dub-cost-card .cost-val { color: #c4b5fd; }
+.dub-cost-card .cost-label { font-size: .65rem; color: #7c3aed; font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
+[data-theme="dark"] .dub-cost-card .cost-label { color: #a78bfa; }
+.dub-cost-card .cost-divider { width: 1px; height: 28px; background: #c4b5fd; }
+.dub-cost-card .cost-total {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border-radius: 12px; padding: 10px 18px;
+  box-shadow: 0 2px 8px rgba(99,102,241,.12);
+}
+[data-theme="dark"] .dub-cost-card .cost-total { background: #1e1b4b; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.dub-cost-card .cost-total .big-diamond { font-size: 1.5rem; }
+.dub-cost-card .cost-total .big-price {
+  font-size: 1.4rem; font-weight: 900;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.dub-cost-card .cost-balance { font-size: .73rem; color: #7c3aed; font-weight: 500; }
+[data-theme="dark"] .dub-cost-card .cost-balance { color: #a78bfa; }
+.dub-cost-card .cost-insufficient { color: #ef4444 !important; }
+
+/* ═══════════ Brutal Cards (landing) ═══════════ */
+.brutal-cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; max-width: 900px; margin: 0 auto 20px; }
+.b-card {
+  width: 270px; height: 220px; translate: -3px -3px;
+  border: 3px solid #000; box-shadow: 6px 6px 0 #000;
+  overflow: hidden; transition: all .3s ease; position: relative; font-family: inherit;
+}
+.b-card:hover { translate: -5px; box-shadow: 8px 8px 0 #000; }
+.b-card .ch {
+  font-size: .8rem; font-weight: 900; height: 26px;
+  background: #fff; padding: 3px 12px; color: #000;
+  border-bottom: 3px solid #000; display: flex; align-items: center;
+}
+.b-card .cb { padding: 8px 14px; font-size: .8rem; font-weight: 600; color: #1e293b; line-height: 1.5; }
+.b-card .cbtn {
+  position: absolute; bottom: 12px; left: 14px;
+  padding: 4px 10px; border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+  font-weight: 700; background: #4ade80; transition: all .2s ease;
+  cursor: pointer; font-family: inherit; font-size: .72rem;
+}
+.b-card .cbtn:hover { translate: 1px 1px; box-shadow: 1px 1px 0 #000; background: #1ac2ff; }
+
+/* ═══════════ Library Grid ═══════════ */
+.library-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px; margin-top: 20px;
+}
+.library-card {
+  background: var(--surface); border-radius: 12px;
+  padding: 16px; border: 1px solid var(--border);
+}
+.library-card .lc-preview {
+  font-size: .75rem; color: var(--text2); line-height: 1.5;
+  -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+  overflow: hidden; display: -webkit-box;
+}
+.library-card .lc-meta { font-size: .65rem; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+.library-card .lc-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+/* ═══════════ Modal ═══════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 16px; padding: 28px;
+  max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.modal h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+.modal .form-group { margin-bottom: 12px; }
+.modal .btn-row { margin-top: 16px; }
+.modal .modal-switch { text-align: center; margin-top: 12px; font-size: .78rem; color: var(--text2); }
+.modal .modal-switch a { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
+
+/* ═══════════ Toast & Alert ═══════════ */
+.toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #0f172a; color: #fff; padding: 10px 20px;
+  border-radius: 10px; font-size: .8rem; font-weight: 500;
+  z-index: 300; transition: .3s; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.alert {
+  padding: 10px 16px; border-radius: 10px; font-size: .8rem;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.alert-warn { background: #FEF3C7; color: #92400e; border: 1px solid #FCD34D; }
+.alert-error { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.empty-state { text-align: center; padding: 40px; color: var(--text3); }
+.hidden { display: none !important; }
+
+/* ═══════════ Responsive ═══════════ */
+@media (max-width: 700px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .persona-cards { grid-template-columns: repeat(2, 1fr); }
+  .dub-cost-card { flex-direction: column; align-items: flex-start; }
+  .brutal-cards { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-logo">✦ <span>星河AI</span></div>
+  <ul class="nav-links">
+    <li><button class="ripple-btn active" data-page="generator"><span></span><span></span><span></span><span></span><span></span><span>🎬 生成</span></button></li>
+    <li><button class="ripple-btn" data-page="dubbing"><span></span><span></span><span></span><span></span><span></span><span>🎤 配音</span></button></li>
+    <li><button class="ripple-btn" data-page="videos"><span></span><span></span><span></span><span></span><span></span><span>🎥 视频库</span></button></li>
+    <li><button class="ripple-btn" data-page="library"><span></span><span></span><span></span><span></span><span></span><span>📚 文案库</span></button></li>
+  </ul>
+  <div class="nav-right">
+    <span class="nav-points" id="pointsDisplay">⭐ <span id="pointBalance">0</span></span>
+    <span class="nav-diamonds" id="diamondsDisplay"><span class="dia-icon">💎</span> <span id="diamondBalance">0</span></span>
+    <button class="btn-theme" onclick="toggleTheme()" title="切换主题">🌓</button>
+    <a href="#" data-page="admin" id="adminLink" style="font-size:.85rem;text-decoration:none;opacity:.5;cursor:pointer" title="管理后台">⚙️</a>
+    <span id="usernameDisplay" style="font-size:.8rem;color:var(--text2)">未登录</span>
+    <button id="authBtn" class="pay-btn" style="font-size:.75rem;padding:7px 18px" onclick="toggleAuth()">
+      登录<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ PAGE: GENERATOR ═══════════ -->
+<div class="page active" id="page-generator">
+<div class="brutal-cards">
+  <div class="b-card" style="background:#ffb3c6"><div class="ch">🤖 AI智能文案</div><div class="cb">DeepSeek驱动，四大人设可选。<br>输入店型秒出爆款口播脚本。</div><button class="cbtn" onclick="switchPage('generator')">开始创作 →</button></div>
+  <div class="b-card" style="background:#fde68a"><div class="ch">🎤 声音克隆</div><div class="cb">上传音频，AI克隆你的声音。<br>用自己的声音朗读文案。</div><button class="cbtn" onclick="switchPage('dubbing')">去配音 →</button></div>
+  <div class="b-card" style="background:#a5f3fc"><div class="ch">🎬 对口型视频</div><div class="cb">上传视频，AI匹配口型。<br>文案+声音+画面三合一。</div><button class="cbtn" onclick="switchPage('dubbing')">去合成 →</button></div>
+</div>
+
+<div class="container" style="padding-top:40px">
+<div class="section-title"><h2>🎬 AI智能生成口播脚本</h2><p>DeepSeek AI驱动 · 每次2积分 · 注册送600积分+600💎钻石</p></div>
+<div class="form-panel">
+  <div class="form-grid">
+    <div class="form-group"><label>商家类型</label><select id="bizType"><option value="">请选择</option><option>川菜馆</option><option>火锅店</option><option>烧烤店</option><option>面馆/粉店</option><option>小吃店</option><option>奶茶/饮品</option><option>烘焙/甜品</option><option>西餐/轻食</option><option>日料</option><option>大排档</option></select></div>
+    <div class="form-group"><label>城市</label><input type="text" id="city" placeholder="如：成都锦江区"></div>
+    <div class="form-group full"><label>人设（必选）</label>
+      <div class="persona-cards">
+        <div class="persona-card active" data-p="regret"><span style="font-size:1.2rem;display:block">😅</span>后悔型</div>
+        <div class="persona-card" data-p="gang"><span style="font-size:1.2rem;display:block">😤</span>杠精型</div>
+        <div class="persona-card" data-p="honest"><span style="font-size:1.2rem;display:block">🤝</span>实在型</div>
+        <div class="persona-card" data-p="craft"><span style="font-size:1.2rem;display:block">🔪</span>匠心型</div>
+      </div><input type="hidden" id="persona" value="regret">
+    </div>
+    <div class="form-group"><label>内容类型</label><select id="contentType"><option value="story">小经历分享</option><option value="founder">创始人故事</option><option value="opinion">说观点</option><option value="pain">痛点极致化</option><option value="process">晒过程</option><option value="knowledge">教知识</option><option value="product">说产品</option></select></div>
+    <div class="form-group"><label>时长</label><select id="duration"><option value="50">50秒</option><option value="60" selected>60秒</option><option value="90">90秒</option><option value="120">120秒</option></select></div>
+    <div class="form-group full"><label>特殊细节</label><textarea id="extraDetails" placeholder="开了三年、招牌水煮鱼、老顾客叫老王..."></textarea></div>
+    <div class="form-group full"><label>核心信息</label><textarea id="coreMessage" placeholder="最想让顾客记住的一件事..."></textarea></div>
+  </div>
+  <div class="btn-row"><button id="btnGenerate" class="pay-btn" onclick="generate()">✨ AI生成脚本<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg></button></div>
+</div>
+<div class="result-panel" id="resultPanel">
+  <div class="result-header">
+    <span class="result-badge">✅ AI已生成</span>
+    <div class="result-actions">
+      <button class="action-btn" onclick="saveScript()">💾 保存</button>
+      <button class="action-btn" onclick="copyScript()">📋 复制</button>
+      <button class="action-btn" onclick="generate()">🔄 换一版</button>
+      <button class="action-btn" onclick="toDubbing()" style="background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;border-color:transparent">🎤 配音</button>
+    </div>
+  </div>
+  <div class="script-card">
+    <div class="script-title" id="scriptMeta"></div>
+    <div class="script-content" id="scriptContent"></div>
+  </div>
+</div>
+</div></div>
+
+<!-- ═══════════ PAGE: DUBBING ═══════════ -->
+<div class="page" id="page-dubbing">
+<div class="container" style="padding-top:40px">
+<div class="section-title"><h2>🎤 AI配音工作室</h2><p>文案 → 克隆声音 → 视频对口型</p></div>
+<div class="form-panel" style="max-width:800px;margin:0 auto">
+  <div class="form-grid">
+    <div class="form-group full"><label>📝 配音文案</label><textarea id="dubScript" placeholder="输入文案..." oninput="updateDubCost()"></textarea></div>
+    <div class="form-group"><label>🎤 参考音频</label><div class="file-zone" id="dubAudioZone"><span id="dubAudioLabel">点击或拖拽上传 (5-15秒人声)</span></div><input type="file" id="dubAudioFile" accept=".wav,.mp3,.m4a,.ogg,.flac" hidden></div>
+    <div class="form-group"><label>🎥 视频画面</label><div class="file-zone" id="dubVideoZone"><span id="dubVideoLabel">点击或拖拽上传 (闭嘴画面)</span></div><input type="file" id="dubVideoFile" accept=".mp4,.mov,.avi" hidden></div>
+  </div>
+  <div class="dub-cost-card" id="dubCostCard">
+    <div class="cost-left">
+      <div class="cost-item"><div class="cost-val" id="costEstSec">--</div><div class="cost-label">📏 预估时长(秒)</div></div>
+      <div class="cost-divider"></div>
+      <div class="cost-item"><div class="cost-val">2 💎 / 10秒</div><div class="cost-label">💰 计费规则</div></div>
+    </div>
+    <div class="cost-total"><span class="big-diamond">💎</span><span class="big-price" id="costEstTotal">--</span><span style="font-size:.75rem;color:var(--text2)">钻石</span></div>
+    <div class="cost-balance" id="costBalance">当前余额：-- 💎</div>
+  </div>
+  <div class="btn-row"><button id="dubGenBtn" class="pay-btn" onclick="dubGenerate()">🎬 开始配音合成<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg></button></div>
+  <div id="dubResult" style="margin-top:16px"></div>
+  <div id="dubTtsPreview"></div>
+  <p style="font-size:.7rem;color:var(--text3);margin-top:12px;text-align:center">VoxCPM2本地声音克隆 + 阿里云唇形同步 | 需启动本地服务</p>
+</div></div></div>
+
+<!-- ═══════════ PAGE: VIDEOS ═══════════ -->
+<div class="page" id="page-videos">
+<div class="container" style="padding-top:40px">
+  <div class="section-title"><h2>🎥 视频库</h2><p>生成的配音视频</p></div>
+  <div class="library-grid" id="videoGrid"></div>
+  <div class="empty-state" id="videoEmpty"><div style="font-size:2rem;margin-bottom:10px">🎬</div><p>还没有视频</p></div>
+</div></div>
+
+<!-- ═══════════ PAGE: LIBRARY ═══════════ -->
+<div class="page" id="page-library">
+<div class="container" style="padding-top:40px">
+  <div class="section-title"><h2>📚 我的文案</h2></div>
+  <div class="library-grid" id="libraryGrid"></div>
+  <div class="empty-state" id="libraryEmpty">📭 还没有保存文案</div>
+</div></div>
+
+<!-- ═══════════ PAGE: ADMIN ═══════════ -->
+<div class="page" id="page-admin">
+<div class="container" style="padding-top:40px">
+<div class="section-title"><h2>🔑 管理后台</h2></div>
+
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px">
+  <h3 style="margin-bottom:12px">🤖 DeepSeek API Key</h3>
+  <div style="display:flex;gap:8px">
+    <input type="password" id="apiKeyInput" placeholder="sk-..." style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem">
+    <button class="btn-generate" onclick="saveApiKey()" style="flex:0;width:auto;padding:8px 16px;font-size:.8rem">💾 保存到云端</button>
+  </div>
+  <div style="margin-top:8px;font-size:.7rem;color:var(--text2)">当前：<span id="apiKeyStatus">加载中...</span></div>
+</div>
+
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px">
+  <h3 style="margin-bottom:12px">🎫 生成邀请码</h3>
+  <div class="form-grid">
+    <div class="form-group"><label>数量</label><select id="inviteCount"><option value="5">5</option><option value="10">10</option></select></div>
+    <div class="form-group"><label>赠送积分</label><input type="number" id="invitePoints" value="600"></div>
+    <div class="form-group"><label>赠送钻石</label><input type="number" id="inviteDiamonds" value="600"></div>
+  </div>
+  <div class="btn-row"><button class="btn-generate" onclick="genCodes()">生成</button></div>
+  <div id="inviteCodeList" style="margin-top:12px;font-size:.8rem"></div>
+</div>
+
+<div class="form-panel" style="max-width:600px;margin:0 auto 20px">
+  <h3 style="margin-bottom:12px">💰 充值</h3>
+  <div class="form-grid">
+    <div class="form-group"><label>用户名</label><input type="text" id="rechargeUser"></div>
+    <div class="form-group"><label>类型</label><select id="rechargeType"><option value="points">⭐ 积分</option><option value="diamonds">💎 钻石</option></select></div>
+    <div class="form-group"><label>数量</label><input type="number" id="rechargeAmount" value="100"></div>
+  </div>
+  <div class="btn-row"><button class="btn-generate" onclick="recharge()">充值</button></div>
+</div>
+
+<div class="form-panel" style="max-width:700px;margin:0 auto">
+  <h3 style="margin-bottom:12px">👥 用户列表</h3>
+  <div id="userList"></div>
+</div>
+</div></div>
+
+<!-- ═══════════ AUTH MODAL ═══════════ -->
+<div class="modal-overlay" id="authModal">
+<div class="modal">
+  <h2 id="authModalTitle">登录</h2>
+  <div class="form-group"><label>用户名</label><input type="text" id="authUsername"></div>
+  <div class="form-group"><label>密码</label><input type="password" id="authPassword"></div>
+  <div class="form-group hidden" id="regCfmGrp"><label>确认密码</label><input type="password" id="authConfirmPw"></div>
+  <div class="form-group hidden" id="regInvGrp"><label>邀请码</label><input type="text" id="authInviteCode"></div>
+  <div class="btn-row"><button class="btn-generate" id="authDoBtn">登录</button></div>
+  <div class="modal-switch"><a id="authSwitch" style="cursor:pointer">去注册</a></div>
+  <div class="modal-switch"><a onclick="closeModal('authModal')" style="color:var(--text3);cursor:pointer">取消</a></div>
+</div></div>
+
+<!-- ═══════════ ADMIN AUTH MODAL ═══════════ -->
+<div class="modal-overlay" id="adminAuthModal">
+<div class="modal">
+  <h2 id="adminAuthTitle">管理员登录</h2>
+  <div class="form-group"><label>用户名</label><input type="text" id="adminAuthUser"></div>
+  <div class="form-group"><label>密码</label><input type="password" id="adminAuthPass"></div>
+  <div class="form-group hidden" id="adminCfmGrp"><label>确认密码</label><input type="password" id="adminAuthConfirm"></div>
+  <div class="btn-row"><button class="btn-generate" id="adminAuthDoBtn">登录</button></div>
+  <div class="modal-switch"><a onclick="closeModal('adminAuthModal')" style="color:var(--text3);cursor:pointer">取消</a></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+/* ══════════════════════════════════════════════════
+   星河AI — Supabase云端版
+   后端: Supabase (ahqqyjyshghrwxivmdji.supabase.co)
+   AI: DeepSeek | 配音: VoxCPM2 本地服务
+   ══════════════════════════════════════════════════ */
+
+// ═══ SUPABASE CONFIG (pure fetch, no CDN) ═══
+const DB = 'https://ahqqyjyshghrwxivmdji.supabase.co/rest/v1';
+const AUTH = atob('c2JfcHVibGlzaGFibGVfR0RTY2lGWUM5Sm90TnBvUVFfUVM3QV9rUFNuaUpvYw==');
+const API_TIMEOUT = 3000; // 3s for reads
+const API_TIMEOUT_WRITE = 5000; // 5s for writes
+
+// ═══ SUPABASE HELPERS (with AbortController timeout) ═══
+async function Q(table, query='') {
+  var c = new AbortController();
+  var t = setTimeout(function(){ c.abort(); }, API_TIMEOUT);
+  try {
+    var r = await fetch(DB+'/'+table+'?'+query, {
+      headers: { apikey: AUTH, Authorization: 'Bearer '+AUTH },
+      signal: c.signal
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+async function I(table, data) {
+  var c = new AbortController();
+  var t = setTimeout(function(){ c.abort(); }, API_TIMEOUT_WRITE);
+  try {
+    var r = await fetch(DB+'/'+table, {
+      method: 'POST',
+      headers: {
+        apikey: AUTH, Authorization: 'Bearer '+AUTH,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify(data),
+      signal: c.signal
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+async function U(table, query, data) {
+  var c = new AbortController();
+  var t = setTimeout(function(){ c.abort(); }, API_TIMEOUT_WRITE);
+  try {
+    var r = await fetch(DB+'/'+table+'?'+query, {
+      method: 'PATCH',
+      headers: {
+        apikey: AUTH, Authorization: 'Bearer '+AUTH,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+      signal: c.signal
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+async function D(table, query) {
+  var c = new AbortController();
+  var t = setTimeout(function(){ c.abort(); }, API_TIMEOUT_WRITE);
+  try {
+    var r = await fetch(DB+'/'+table+'?'+query, {
+      method: 'DELETE',
+      headers: { apikey: AUTH, Authorization: 'Bearer '+AUTH },
+      signal: c.signal
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+// ═══ UTILS ═══
+function _(id) { return document.getElementById(id); }
+function toast(msg, dur) { var t = _('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, dur || 2000); }
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function closeModal(id) { _(id).classList.remove('active'); }
+
+// ═══ localStorage wrapper (for fallback) ═══
+var LS = {
+  get: function(k, d) {
+    try { var v = localStorage.getItem('hbs_'+k); return v ? JSON.parse(v) : d; }
+    catch(e) { return d; }
+  },
+  set: function(k, v) {
+    try { localStorage.setItem('hbs_'+k, JSON.stringify(v)); }
+    catch(e) { console.error('LS.set error:', e); }
+  }
+};
+
+// ═══ CONSTANTS ═══
+var PERSONAS = {
+  regret: { name: '后悔型', icon: '😅' },
+  gang: { name: '杠精型', icon: '😤' },
+  honest: { name: '实在型', icon: '🤝' },
+  craft: { name: '匠心型', icon: '🔪' }
+};
+var CT = {
+  founder: '创始人故事', story: '小经历分享', opinion: '说观点',
+  pain: '痛点极致化', process: '晒过程', knowledge: '教知识', product: '说产品'
+};
+var CHARS_PER_SEC = 4;
+var DIAMONDS_PER_10S = 2;
+var DUB = 'http://127.0.0.1:8080'; // VoxCPM2 local service
+
+// ═══ STATE ═══
+var currentUser = null;
+var authMode = 'login';
+var adminOk = false;
+var currentScript = null;
+var ds = { audio: null, video: null }; // dub files
+var apiKeyCache = { key: '', time: 0 };
+
+// ═══ API KEY (cloud-stored in Supabase app_config) ═══
+async function getApiKey() {
+  // 5-min cache
+  if (apiKeyCache.key && Date.now() - apiKeyCache.time < 300000) return apiKeyCache.key;
+  try {
+    var r = await Q('app_config', 'key=eq.deepseek_key');
+    if (r && r.length && r[0].value) {
+      apiKeyCache = { key: r[0].value, time: Date.now() };
+      return r[0].value;
+    }
+  } catch(e) { /* Supabase unreachable */ }
+  // Fallback: localStorage or config.js
+  var local = localStorage.getItem('hbs_api_key') || (window.__API_KEY || '');
+  apiKeyCache = { key: local, time: Date.now() };
+  return local;
+}
+
+// ═══ DB OPERATIONS (Supabase primary, localStorage fallback) ═══
+
+// --- User Points/Diamonds ---
+async function dbGetUser(uname) {
+  try {
+    var r = await Q('user_points', 'username=eq.'+encodeURIComponent(uname)+'&limit=1');
+    if (r && r.length) return r[0];
+  } catch(e) {}
+  // localStorage fallback
+  var users = LS.get('users', {});
+  return users[uname] ? { username: uname, password: users[uname].password, points: users[uname].points || 0, diamonds: users[uname].diamonds || 0, created_at: users[uname].createdAt } : null;
+}
+
+async function dbSetPoints(uname, points, diamonds) {
+  try {
+    await U('user_points', 'username=eq.'+encodeURIComponent(uname), { points: points, diamonds: diamonds, updated_at: new Date().toISOString() });
+  } catch(e) {}
+  // localStorage fallback
+  var users = LS.get('users', {});
+  if (users[uname]) { users[uname].points = points; users[uname].diamonds = diamonds; LS.set('users', users); }
+  if (currentUser && currentUser.username === uname) {
+    currentUser.points = points;
+    currentUser.diamonds = diamonds;
+    updateUI();
+  }
+}
+
+async function dbGetAllUsers() {
+  var users = [];
+  try { users = await Q('user_points'); } catch(e) {}
+  var localUsers = LS.get('users', {});
+  for (var k in localUsers) {
+    if (!users.find(function(u){ return u.username === k; })) {
+      users.push({ username: k, password: localUsers[k].password, points: localUsers[k].points || 0, diamonds: localUsers[k].diamonds || 0, created_at: localUsers[k].createdAt });
+    }
+  }
+  return users;
+}
+
+// --- Invite Codes ---
+async function dbGetInviteCodes() {
+  try { var r = await Q('invite_codes'); return r || []; }
+  catch(e) { return LS.get('invite_codes', []); }
+}
+
+async function dbCreateInviteCode(data) {
+  try { await I('invite_codes', data); } catch(e) {}
+  var codes = LS.get('invite_codes', []);
+  codes.push(data);
+  LS.set('invite_codes', codes);
+}
+
+async function dbUseInviteCode(code, usedBy) {
+  try { await U('invite_codes', 'code=eq.'+encodeURIComponent(code), { used: true, used_by: usedBy, used_at: new Date().toISOString() }); } catch(e) {}
+  var codes = LS.get('invite_codes', []);
+  var idx = codes.findIndex(function(c){ return c.code === code; });
+  if (idx >= 0) { codes[idx].used = true; codes[idx].usedBy = usedBy; codes[idx].usedAt = new Date().toISOString(); LS.set('invite_codes', codes); }
+}
+
+// --- Scripts ---
+async function dbGetScripts(uname) {
+  var scripts = [];
+  try {
+    var r = await Q('scripts', 'username=eq.'+encodeURIComponent(uname)+'&order=created_at.desc');
+    scripts = (r || []).map(function(s){ return s.script_data; });
+  } catch(e) {}
+  var localScripts = LS.get('scripts', []);
+  // merge: Supabase scripts take precedence by id
+  var ids = {};
+  scripts.forEach(function(s){ ids[s.id] = true; });
+  localScripts.forEach(function(s){ if (!ids[s.id]) scripts.push(s); });
+  scripts.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+  return scripts;
+}
+
+async function dbSaveScript(uname, scriptData) {
+  try { await I('scripts', { id: scriptData.id, username: uname, script_data: scriptData, created_at: scriptData.createdAt }); } catch(e) {}
+  var scripts = LS.get('scripts', []);
+  scripts.unshift(scriptData);
+  LS.set('scripts', scripts);
+}
+
+async function dbDeleteScript(id) {
+  try { await D('scripts', 'id=eq.'+encodeURIComponent(id)); } catch(e) {}
+  LS.set('scripts', LS.get('scripts', []).filter(function(s){ return s.id !== id; }));
+}
+
+// --- Admin Users ---
+async function dbGetAdminCreds() {
+  // Check localStorage first for speed
+  var local = LS.get('admin_creds', null);
+  if (local) return local;
+  try {
+    var r = await Q('admin_users', 'limit=1');
+    if (r && r.length) return { username: r[0].username, password: r[0].password };
+  } catch(e) {}
+  return null;
+}
+
+async function dbSetAdminCreds(u, p) {
+  try { await I('admin_users', { username: u, password: p }); } catch(e) {
+    try { await U('admin_users', 'username=eq.'+encodeURIComponent(u), { password: p }); } catch(e2) {}
+  }
+  LS.set('admin_creds', { username: u, password: p });
+}
+
+// --- App Config (API Key) ---
+async function dbSaveApiKey(key) {
+  try { await I('app_config', { key: 'deepseek_key', value: key }); } catch(e) {
+    try { await U('app_config', 'key=eq.deepseek_key', { value: key }); } catch(e2) {}
+  }
+  localStorage.setItem('hbs_api_key', key);
+  apiKeyCache = { key: key, time: Date.now() };
+  updateApiKeyStatus();
+  toast('API Key 已保存到云端 ✅');
+}
+
+// ═══ AUTH ═══
+async function doRegister() {
+  var u = _('authUsername').value.trim();
+  var p = _('authPassword').value.trim();
+  if (!u || !p) return toast('请填写用户名和密码');
+  if (p !== _('authConfirmPw').value.trim()) return toast('密码不一致');
+  var ic = _('authInviteCode').value.trim();
+  if (!ic) return toast('需要邀请码');
+
+  // Check invite code
+  var codes = await dbGetInviteCodes();
+  var idx = codes.findIndex(function(c){ return c.code === ic && !c.used; });
+  if (idx === -1) return toast('邀请码无效或已使用');
+
+  // Check if user exists
+  var exist = await dbGetUser(u);
+  if (exist) return toast('用户名已存在');
+
+  // Consume code
+  await dbUseInviteCode(ic, u);
+  var pts = codes[idx].points || 600;
+  var dia = codes[idx].diamonds || 600;
+
+  // Create user in Supabase
+  var userData = { username: u, password: p, points: pts, diamonds: dia, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+  try { await I('user_points', userData); } catch(e) {}
+  // localStorage fallback
+  var users = LS.get('users', {});
+  users[u] = { password: p, points: pts, diamonds: dia, createdAt: new Date().toISOString() };
+  LS.set('users', users);
+
+  // Login
+  currentUser = { username: u, points: pts, diamonds: dia, created_at: new Date().toISOString() };
+  localStorage.setItem('hbs_last_user', u);
+  closeModal('authModal');
+  updateUI();
+  toast('注册成功！赠送 '+pts+'⭐积分 + '+dia+'💎钻石');
+}
+
+async function doLogin() {
+  var u = _('authUsername').value.trim();
+  var p = _('authPassword').value.trim();
+  if (!u || !p) return toast('请填写用户名和密码');
+
+  var user = await dbGetUser(u);
+  if (!user || user.password !== p) return toast('用户名或密码错误');
+
+  currentUser = { username: u, points: user.points || 0, diamonds: user.diamonds || 0, created_at: user.created_at };
+  localStorage.setItem('hbs_last_user', u);
+  closeModal('authModal');
+  updateUI();
+  toast('登录成功，欢迎回来');
+}
+
+function toggleAuth() {
+  if (currentUser) {
+    currentUser = null;
+    localStorage.removeItem('hbs_last_user');
+    updateUI();
+    toast('已退出');
+  } else {
+    authMode = 'login';
+    updateAuthForm();
+    _('authModal').classList.add('active');
+  }
+}
+
+function updateAuthForm() {
+  _('authModalTitle').textContent = authMode === 'login' ? '登录' : '注册';
+  _('regCfmGrp').classList.toggle('hidden', authMode === 'login');
+  _('regInvGrp').classList.toggle('hidden', authMode === 'login');
+  _('authDoBtn').textContent = authMode === 'login' ? '登录' : '注册';
+  _('authSwitch').textContent = authMode === 'login' ? '去注册' : '去登录';
+}
+
+function updateUI() {
+  if (currentUser) {
+    _('usernameDisplay').textContent = currentUser.username;
+    _('authBtn').innerHTML = '退出<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg>';
+    _('pointsDisplay').style.display = 'flex';
+    _('pointBalance').textContent = currentUser.points;
+    _('diamondsDisplay').style.display = 'flex';
+    _('diamondBalance').textContent = currentUser.diamonds || 0;
+    _('btnGenerate').disabled = currentUser.points < 2;
+  } else {
+    _('usernameDisplay').textContent = '未登录';
+    _('authBtn').innerHTML = '登录<svg class="svgIcon" viewBox="0 0 576 512"><path d="M512 80c8.8 0 16 7.2 16 16v32H48V96c0-8.8 7.2-16 16-16H512zm16 144V416c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V224H528zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm56 304c-13.3 0-24 10.7-24 24s10.7 24 24 24h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H120zm128 0c-13.3 0-24 10.7-24 24s10.7 24 24 24H360c13.3 0 24-10.7 24-24s-10.7-24-24-24H248z"></path></svg>';
+    _('pointsDisplay').style.display = 'none';
+    _('diamondsDisplay').style.display = 'none';
+    _('btnGenerate').disabled = true;
+  }
+  updateDubCost();
+}
+
+// Auth modal event handlers
+_('authDoBtn').onclick = function() {
+  if (authMode === 'login') doLogin(); else doRegister();
+};
+_('authSwitch').onclick = function() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  updateAuthForm();
+};
+
+// ═══ ADMIN AUTH ═══
+async function openAdmin() {
+  var c = await dbGetAdminCreds();
+  if (!c) {
+    _('adminAuthTitle').textContent = '首次设置管理员';
+    _('adminCfmGrp').classList.remove('hidden');
+  } else {
+    _('adminAuthTitle').textContent = '管理员登录';
+    _('adminCfmGrp').classList.add('hidden');
+  }
+  _('adminAuthUser').value = '';
+  _('adminAuthPass').value = '';
+  _('adminAuthConfirm').value = '';
+  _('adminAuthModal').classList.add('active');
+}
+
+_('adminAuthDoBtn').onclick = async function() {
+  var u = _('adminAuthUser').value.trim();
+  var p = _('adminAuthPass').value.trim();
+  if (!u || !p) return;
+  var c = await dbGetAdminCreds();
+  if (!c) {
+    if (p !== _('adminAuthConfirm').value.trim()) return toast('密码不一致');
+    await dbSetAdminCreds(u, p);
+    adminOk = true;
+    closeModal('adminAuthModal');
+    switchPage('admin');
+    toast('管理员已设置');
+    return;
+  }
+  if (u === c.username && p === c.password) {
+    adminOk = true;
+    closeModal('adminAuthModal');
+    switchPage('admin');
+  } else {
+    toast('用户名或密码错误');
+  }
+};
+
+// ═══ PAGE SWITCHING ═══
+function switchPage(page) {
+  if (page === 'admin' && !adminOk) { openAdmin(); return; }
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var pg = _('page-' + page);
+  if (pg) pg.classList.add('active');
+
+  // Highlight nav button (FIXED: use button selector, not a)
+  document.querySelectorAll('.nav-links button[data-page]').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.querySelector('.nav-links button[data-page="'+page+'"]');
+  if (btn) btn.classList.add('active');
+
+  // Load page data
+  if (page === 'library') renderLibrary();
+  if (page === 'admin') { renderCodeList(); renderUserList(); updateApiKeyStatus(); }
+  if (page === 'dubbing') { setTimeout(function(){ setupDub('audio'); setupDub('video'); updateDubCost(); }, 300); }
+  if (page === 'videos') renderVideoLib();
+}
+
+// Nav button click handlers — use button selector
+document.querySelectorAll('.nav-links button[data-page]').forEach(function(b){
+  b.onclick = function(e){ e.preventDefault(); switchPage(this.dataset.page); };
+});
+_('adminLink').onclick = function(e){ e.preventDefault(); switchPage('admin'); };
+
+// ═══ THEME ═══
+function toggleTheme() {
+  var h = document.documentElement;
+  var next = h.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  h.setAttribute('data-theme', next);
+  localStorage.setItem('hbs_theme', next);
+}
+
+// ═══ DIAMOND COST ═══
+function calcDubCost() {
+  var text = _('dubScript').value.trim();
+  if (!text) return { seconds: 0, cost: 0 };
+  var estSec = Math.ceil(text.length / CHARS_PER_SEC);
+  var cost = Math.max(2, Math.ceil(estSec / 10) * DIAMONDS_PER_10S);
+  return { seconds: estSec, cost: cost };
+}
+
+function updateDubCost() {
+  var c = calcDubCost();
+  _('costEstSec').textContent = c.seconds || '--';
+  _('costEstTotal').textContent = c.cost || '--';
+  if (currentUser) {
+    var d = currentUser.diamonds || 0;
+    _('costBalance').textContent = '当前余额：' + d + ' 💎';
+    _('costBalance').classList.toggle('cost-insufficient', c.cost > 0 && d < c.cost);
+  } else {
+    _('costBalance').textContent = '请先登录查看余额';
+    _('costBalance').classList.remove('cost-insufficient');
+  }
+}
+
+// ═══ AI SCRIPT GENERATION ═══
+var FW = "你是顶级口播脚本写手，帮餐饮老板写抖音/小红书爆款文案。你的脚本不像文案，而像一个真的餐饮老板在跟熟人聊天。\n\n商家：BIZ | 城市：CITY | 人设：PERSONA | 类型：CTYPE | 时长：DUR秒\n细节：EXTRA | 核心：CORE\n\n【爆款公式】老问题+新情绪+高强代入\n【五大锚点】生存焦虑|群体对比|价值冲突|情绪自证|共鸣认同\n【四大餐饮人设】后悔型(自嘲凡尔赛)|杠精型(正面刚)|实在型(听劝人设)|匠心型(品质红线)\n【口播结构】开头一句话抓注意力→展开细节用事说话→自然收尾不喊口号\n【去AI味铁律】禁止：引号对白、顾客说朋友问、金句升华、欢迎来坐关注我、排比对仗\n必须：像跟邻居聊天，碎句子带语气词，数字取代形容词，说完就停\n\n‼️输出铁律：直接输出纯文案正文。严禁时间标注如[0-3秒钩子][收尾]，严禁分段标题，只要文案本身。";
+
+function buildPrompt() {
+  var p = PERSONAS[_('persona').value] || PERSONAS.regret;
+  var biz = _('bizType').value || '餐饮店', city = _('city').value || '本地';
+  var ct = CT[_('contentType').value] || '小经历分享', dur = parseInt(_('duration').value) || 60;
+  return FW.replace('BIZ', biz).replace('CITY', city).replace('PERSONA', p.name)
+    .replace('CTYPE', ct).replace('DUR', String(dur))
+    .replace('EXTRA', _('extraDetails').value || '编真实细节')
+    .replace('CORE', _('coreMessage').value || '自然带出');
+}
+
+async function generate() {
+  if (!currentUser) { toast('请先登录'); openAuth(); return; }
+  if (currentUser.points < 2) { toast('积分不足，生成脚本需要2积分'); return; }
+  var apiKey = await getApiKey();
+  if (!apiKey) { toast('未配置DeepSeek API Key，请联系管理员'); return; }
+
+  var b = _('btnGenerate');
+  b.disabled = true; b.textContent = '🤖 创作中...';
+
+  try {
+    var c = new AbortController();
+    var t = setTimeout(function(){ c.abort(); }, 30000); // 30s for AI
+    var r = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: buildPrompt() },
+          { role: 'user', content: '直接输出口播文案，不要标注' }
+        ],
+        temperature: 0.95,
+        max_tokens: 2000
+      }),
+      signal: c.signal
+    });
+    clearTimeout(t);
+
+    if (!r.ok) throw new Error(((await r.json()).error || {}).message || 'API Error');
+    var text = (await r.json()).choices[0].message.content;
+
+    currentScript = {
+      text: text,
+      meta: _('bizType').value + '·' + PERSONAS[_('persona').value].name + '·' + _('duration').value + '秒'
+    };
+    _('scriptMeta').textContent = currentScript.meta;
+    _('scriptContent').textContent = text;
+    _('resultPanel').classList.add('visible');
+    _('resultPanel').scrollIntoView({ behavior: 'smooth' });
+
+    // Deduct points (Supabase primary)
+    currentUser.points -= 2;
+    await dbSetPoints(currentUser.username, currentUser.points, currentUser.diamonds);
+    updateUI();
+
+  } catch(e) {
+    toast('生成失败: ' + (e.name === 'AbortError' ? '请求超时' : e.message));
+  }
+  b.disabled = false; b.textContent = '✨ AI生成脚本';
+}
+
+function openAuth() { authMode = 'login'; updateAuthForm(); _('authModal').classList.add('active'); }
+
+function saveScript() {
+  if (!currentScript || !currentUser) return;
+  var entry = {
+    id: Date.now().toString(36),
+    text: currentScript.text,
+    meta: currentScript.meta,
+    createdAt: new Date().toISOString()
+  };
+  dbSaveScript(currentUser.username, entry);
+  toast('已保存');
+}
+
+function copyScript() {
+  navigator.clipboard.writeText(_('scriptContent').textContent).then(function(){ toast('已复制'); });
+}
+
+function toDubbing() {
+  if (currentScript) _('dubScript').value = currentScript.text;
+  switchPage('dubbing');
+  setTimeout(updateDubCost, 100);
+}
+
+// ═══ LIBRARY ═══
+async function renderLibrary() {
+  if (!currentUser) { _('libraryEmpty').style.display = 'block'; _('libraryGrid').innerHTML = ''; return; }
+  var scripts = await dbGetScripts(currentUser.username);
+  if (!scripts.length) { _('libraryEmpty').style.display = 'block'; _('libraryGrid').innerHTML = ''; return; }
+  _('libraryEmpty').style.display = 'none';
+  _('libraryGrid').innerHTML = scripts.map(function(s){
+    return '<div class="library-card">' +
+      '<div class="lc-meta">' + esc(s.meta) + '</div>' +
+      '<div class="lc-preview">' + esc((s.text || '').substring(0, 200)) + '...</div>' +
+      '<div class="lc-actions">' +
+        '<button class="action-btn" onclick="viewScript(\'' + s.id + '\')">查看</button>' +
+        '<button class="action-btn danger" onclick="delScript(\'' + s.id + '\')">删除</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function viewScript(id) {
+  if (!currentUser) return;
+  dbGetScripts(currentUser.username).then(function(scripts){
+    var s = scripts.find(function(x){ return x.id === id; });
+    if (!s) return;
+    currentScript = s;
+    _('scriptMeta').textContent = s.meta;
+    _('scriptContent').textContent = s.text;
+    _('resultPanel').classList.add('visible');
+    switchPage('generator');
+  });
+}
+
+async function delScript(id) {
+  await dbDeleteScript(id);
+  renderLibrary();
+  toast('已删除');
+}
+
+// ═══ DUBBING ═══
+function setupDub(type) {
+  var t = type.charAt(0).toUpperCase() + type.slice(1);
+  var zone = _('dub' + t + 'Zone');
+  var input = _('dub' + t + 'File');
+  var label = _('dub' + t + 'Label');
+  if (!zone || !input) return;
+  var defs = { audio: '点击或拖拽上传 (5-15秒人声)', video: '点击或拖拽上传 (闭嘴画面)' };
+
+  function handle(f) {
+    if (!f) return;
+    ds[type] = f;
+    label.textContent = '✅ ' + f.name;
+    zone.style.borderColor = '#22c55e';
+    zone.style.color = '#22c55e';
+    var url = URL.createObjectURL(f);
+    var pid = 'dub' + t + 'Preview';
+    var old = document.getElementById(pid);
+    if (old) old.remove();
+    var el = document.createElement(type === 'audio' ? 'audio' : 'video');
+    el.id = pid;
+    el.controls = true;
+    el.style.cssText = 'width:100%;margin-top:10px;border-radius:10px' + (type === 'video' ? ';max-height:200px' : '');
+    zone.parentNode.appendChild(el);
+    el.src = url;
+    // Remove button
+    var did = 'dub' + t + 'Del';
+    if (!document.getElementById(did)) {
+      var d = document.createElement('button');
+      d.id = did;
+      d.textContent = '✕ 移除';
+      d.style.cssText = 'margin-top:6px;padding:4px 12px;font-size:.7rem;border:1px solid #fecaca;border-radius:6px;background:#fef2f2;color:#ef4444;cursor:pointer';
+      d.onclick = function(){
+        ds[type] = null;
+        input.value = '';
+        label.textContent = defs[type];
+        zone.style.borderColor = '';
+        zone.style.color = '';
+        var pv = document.getElementById(pid);
+        if (pv) pv.remove();
+        d.remove();
+      };
+      zone.parentNode.appendChild(d);
+    }
+    toast('✅ 已上传: ' + f.name);
+  }
+
+  zone.onclick = function(){ input.click(); };
+  input.onchange = function(){ if (input.files[0]) handle(input.files[0]); };
+  zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.style.borderColor = '#818cf8'; });
+  zone.addEventListener('dragleave', function(){ zone.style.borderColor = ''; });
+  zone.addEventListener('drop', function(e){ e.preventDefault(); zone.style.borderColor = ''; if (e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]); });
+}
+
+document.addEventListener('dragover', function(e){ e.preventDefault(); });
+document.addEventListener('drop', function(e){ e.preventDefault(); });
+
+async function dubGenerate() {
+  var s = _('dubScript').value.trim();
+  if (!s) return toast('请输入文案');
+  if (!currentUser) { toast('请先登录'); openAuth(); return; }
+  if (!ds.audio) return toast('请上传参考音频');
+  if (!ds.video) return toast('请上传视频');
+
+  var cost = calcDubCost();
+  if ((currentUser.diamonds || 0) < cost.cost) {
+    return toast('💎钻石不足！需要 ' + cost.cost + ' 钻石，当前余额 ' + (currentUser.diamonds || 0));
+  }
+
+  var b = _('dubGenBtn');
+  b.disabled = true;
+  b.textContent = '⏳ 克隆声音...';
+
+  // Step 1: TTS
+  try {
+    var fd = new FormData();
+    fd.append('text', s);
+    fd.append('ref_audio', ds.audio);
+    var c1 = new AbortController();
+    var t1 = setTimeout(function(){ c1.abort(); }, 60000);
+    var r = await fetch(DUB + '/api/tts-public', { method: 'POST', body: fd, signal: c1.signal });
+    clearTimeout(t1);
+    if (!r.ok) { var e = await r.json(); toast(e.detail || 'TTS失败'); b.disabled = false; b.textContent = '🎬 开始配音合成'; return; }
+    var blob = await r.blob();
+    _('dubTtsPreview').innerHTML = '<div style="background:var(--green-bg);border:1px solid #A7F3D0;border-radius:10px;padding:12px;margin-top:8px"><p style="color:var(--green);font-weight:600">✅ 声音克隆完成</p><audio controls src="' + URL.createObjectURL(blob) + '" style="width:100%;margin-top:8px"></audio></div>';
+  } catch(e) {
+    toast('TTS连接失败，请确认VoxCPM2本地服务(127.0.0.1:8080)已启动');
+    b.disabled = false; b.textContent = '🎬 开始配音合成';
+    return;
+  }
+
+  // Step 2: Lip sync
+  b.textContent = '⏳ 唇形同步...';
+  _('dubResult').innerHTML = '<div class="alert alert-warn">⏳ 云端唇形同步，预计1-3分钟...</div>';
+
+  try {
+    var fd2 = new FormData();
+    fd2.append('text', s);
+    fd2.append('ref_audio', ds.audio);
+    fd2.append('video', ds.video);
+    var c2 = new AbortController();
+    var t2 = setTimeout(function(){ c2.abort(); }, 120000);
+    var r2 = await fetch(DUB + '/api/generate-public', { method: 'POST', body: fd2, signal: c2.signal });
+    clearTimeout(t2);
+    if (!r2.ok) { var e2 = await r2.json(); toast(e2.detail || '唇形同步失败'); b.disabled = false; b.textContent = '🎬 开始配音合成'; return; }
+
+    // Deduct diamonds
+    currentUser.diamonds = (currentUser.diamonds || 0) - cost.cost;
+    await dbSetPoints(currentUser.username, currentUser.points, currentUser.diamonds);
+    updateUI();
+
+    var d = await r2.json();
+    dubPoll(d.task_id);
+  } catch(e) {
+    toast('唇形同步连接失败: ' + (e.name === 'AbortError' ? '请求超时' : e.message));
+  }
+  b.disabled = false; b.textContent = '🎬 开始配音合成';
+}
+
+async function dubPoll(tid) {
+  var el = _('dubResult');
+  for (var i = 0; i < 180; i++) {
+    await new Promise(function(r){ setTimeout(r, 3000); });
+    try {
+      var c = new AbortController();
+      var t = setTimeout(function(){ c.abort(); }, 5000);
+      var r = await fetch(DUB + '/api/tasks-public/' + tid, { signal: c.signal });
+      clearTimeout(t);
+      if (!r.ok) continue;
+      var d = await r.json();
+      if (d.task.status === 'done') {
+        var dlUrl = DUB + '/api/download-public/' + tid;
+        el.innerHTML = '<div class="script-card"><div class="script-title">✅ 配音完成</div><video controls src="' + dlUrl + '" style="width:100%;border-radius:10px;max-height:350px"></video><div class="btn-row"><a class="btn-generate" href="' + dlUrl + '" target="_blank" style="text-decoration:none">⬇ 下载视频</a></div></div>';
+        toast('合成完成！');
+        // Save to video library
+        var vlib = LS.get('videos', []);
+        vlib.unshift({ id: tid, url: dlUrl, text: (_('dubScript').value || '').substring(0, 50), createdAt: new Date().toISOString() });
+        LS.set('videos', vlib);
+        return;
+      }
+      if (d.task.status === 'failed') {
+        el.innerHTML = '<div class="alert alert-error">❌ 失败: ' + (d.task.error_msg || '未知错误') + '</div>';
+        return;
+      }
+    } catch(e) {
+      // Network error during poll — show warning but keep polling
+      console.warn('Poll error:', e.message);
+    }
+    var mins = Math.round(i * 3 / 60);
+    el.innerHTML = '<div class="alert alert-warn">⏳ 处理中...(' + mins + '分钟)</div>';
+  }
+  el.innerHTML = '<div class="alert alert-error">❌ 超时：处理超过9分钟，请重试</div>';
+}
+
+// ═══ VIDEO LIBRARY ═══
+function renderVideoLib() {
+  var v = LS.get('videos', []);
+  if (!v.length) { _('videoEmpty').style.display = 'block'; _('videoGrid').innerHTML = ''; return; }
+  _('videoEmpty').style.display = 'none';
+  _('videoGrid').innerHTML = v.map(function(x){
+    return '<div class="library-card">' +
+      '<div class="lc-meta">' + esc(x.text || '') + '</div>' +
+      '<video controls src="' + x.url + '" style="width:100%;border-radius:10px;max-height:200px;margin:8px 0"></video>' +
+      '<div class="lc-actions">' +
+        '<a class="action-btn" href="' + x.url + '" download>⬇ 下载</a>' +
+        '<button class="action-btn danger" onclick="delVideo(\'' + x.id + '\')">删除</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function delVideo(id) {
+  LS.set('videos', LS.get('videos', []).filter(function(x){ return x.id !== id; }));
+  renderVideoLib();
+  toast('已删除');
+}
+
+// ═══ ADMIN ═══
+async function saveApiKey() {
+  var key = _('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('sk-')) { toast('请输入有效的DeepSeek API Key (sk-开头)'); return; }
+  _('apiKeyInput').value = '';
+  await dbSaveApiKey(key);
+}
+
+async function updateApiKeyStatus() {
+  var st = _('apiKeyStatus');
+  if (!st) return;
+  var key = await getApiKey();
+  if (key) {
+    st.textContent = '已配置 (' + key.substring(0, 10) + '...)';
+    st.style.color = 'var(--green)';
+  } else {
+    st.textContent = '未配置 (config.js或云端)';
+    st.style.color = 'var(--text3)';
+  }
+}
+
+async function genCodes() {
+  var n = parseInt(_('inviteCount').value) || 5;
+  var p = parseInt(_('invitePoints').value) || 600;
+  var d = parseInt(_('inviteDiamonds').value) || 600;
+  for (var i = 0; i < n; i++) {
+    var code = 'HBS-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    var data = { code: code, points: p, diamonds: d, used: false };
+    await dbCreateInviteCode(data);
+  }
+  renderCodeList();
+  toast('已生成' + n + '个码');
+}
+
+async function renderCodeList() {
+  var c = await dbGetInviteCodes();
+  var u = c.filter(function(x){ return !x.used; });
+  var s = c.filter(function(x){ return x.used; });
+  _('inviteCodeList').innerHTML =
+    '<p style="color:var(--green);font-weight:600">未使用(' + u.length + ')</p>' +
+    u.slice(-20).map(function(x){
+      return '<div style="margin:4px 0;padding:4px;background:var(--green-bg);border-radius:4px"><code>' + x.code + '</code> ⭐' + (x.points||600) + '积分 + 💎' + (x.diamonds||600) + '钻石</div>';
+    }).join('') +
+    '<p style="margin-top:8px;color:var(--text3)">已使用(' + s.length + ')</p>';
+}
+
+async function recharge() {
+  var u = _('rechargeUser').value.trim();
+  var type = _('rechargeType').value;
+  var amt = parseInt(_('rechargeAmount').value);
+  if (!u || !amt) return;
+
+  var user = await dbGetUser(u);
+  if (!user) { toast('用户不存在'); return; }
+
+  var newPts = user.points || 0;
+  var newDia = user.diamonds || 0;
+  if (type === 'points') newPts += amt; else newDia += amt;
+  await dbSetPoints(u, newPts, newDia);
+
+  if (currentUser && currentUser.username === u) {
+    currentUser.points = newPts;
+    currentUser.diamonds = newDia;
+    updateUI();
+  }
+  renderUserList();
+  toast(u + ' +' + amt + (type === 'points' ? ' ⭐积分' : ' 💎钻石'));
+}
+
+async function renderUserList() {
+  var ul = _('userList');
+  if (!ul) return;
+  var users;
+  try { users = await dbGetAllUsers(); } catch(e) { users = []; }
+  if (!users.length) { ul.innerHTML = '<p style="text-align:center;padding:24px;color:var(--text3)">暂无用户</p>'; return; }
+
+  var html = '<div style="display:grid;gap:10px">';
+  for (var j = 0; j < users.length; j++) {
+    var u = users[j];
+    var pts = u.points || 0, dia = u.diamonds || 0;
+    var date = u.created_at ? new Date(u.created_at).toLocaleDateString('zh-CN') : '-';
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;flex-wrap:wrap">' +
+      '<div style="min-width:80px"><b style="font-size:.9rem">' + esc(u.username) + '</b><div style="font-size:.65rem;color:var(--text3)">' + date + '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:8px;padding:6px 12px">' +
+        '<span style="font-size:.75rem;font-weight:600">⭐积分</span>' +
+        '<input type="number" value="' + pts + '" data-user="' + esc(u.username) + '" data-field="points" onchange="updateUserField(this)" style="width:72px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;text-align:center;font-family:inherit;font-weight:600;color:var(--accent2)">' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:8px;padding:6px 12px">' +
+        '<span style="font-size:.75rem;font-weight:600">💎钻石</span>' +
+        '<input type="number" value="' + dia + '" data-user="' + esc(u.username) + '" data-field="diamonds" onchange="updateUserField(this)" style="width:72px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;text-align:center;font-family:inherit;font-weight:600;color:#5b21b6">' +
+      '</div>' +
+      '<button onclick="deleteUser(\'' + esc(u.username) + '\')" class="action-btn danger" style="font-size:.7rem;padding:5px 10px;margin-left:auto">删除</button>' +
+      '</div>';
+  }
+  ul.innerHTML = html + '</div>';
+}
+
+async function updateUserField(input) {
+  var uname = input.dataset.user;
+  var field = input.dataset.field;
+  var val = parseInt(input.value);
+  if (isNaN(val) || val < 0) { input.value = 0; val = 0; }
+  var user = await dbGetUser(uname);
+  if (!user) { toast('用户不存在'); return; }
+  var oldVal = user[field] || 0;
+  user[field] = val;
+  await dbSetPoints(uname, user.points || 0, user.diamonds || 0);
+  if (currentUser && currentUser.username === uname) { currentUser[field] = val; updateUI(); }
+  var label = field === 'points' ? '⭐积分' : '💎钻石';
+  if (val !== oldVal) toast(uname + ' ' + label + ' → ' + val);
+}
+
+async function deleteUser(uname) {
+  if (!confirm('确定删除用户「' + uname + '」？')) return;
+  try { await D('user_points', 'username=eq.' + encodeURIComponent(uname)); } catch(e) {}
+  var users = LS.get('users', {});
+  if (users[uname]) { delete users[uname]; LS.set('users', users); }
+  renderUserList();
+  toast('已删除 ' + uname);
+}
+
+// ═══ INIT ═══
+// Persona card switching
+document.querySelectorAll('.persona-card').forEach(function(c){
+  c.onclick = function(){
+    document.querySelectorAll('.persona-card').forEach(function(x){ x.classList.remove('active'); });
+    c.classList.add('active');
+    _('persona').value = c.dataset.p;
+  };
+});
+
+(async function init() {
+  // Theme
+  var t = localStorage.getItem('hbs_theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+
+  // Auto-login from last session
+  var lu = localStorage.getItem('hbs_last_user');
+  if (lu) {
+    var user = await dbGetUser(lu);
+    if (user) {
+      currentUser = { username: lu, points: user.points || 0, diamonds: user.diamonds || 0, created_at: user.created_at };
+    }
+  }
+  updateUI();
+})();
+</script>
+</body>
+</html>
